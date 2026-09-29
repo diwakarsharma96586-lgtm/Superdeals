@@ -211,7 +211,110 @@ export const INITIAL_DEALS: DealItem[] = [
   }
 ];
 
-// Pool of trending deals fetched when Admin clicks 'Auto-Sync Deals'
+// Preloaded Draft Deals awaiting admin approval
+export const INITIAL_DRAFT_DEALS: DealItem[] = [
+  {
+    id: 'draft-iphone-15-plus',
+    title: 'Apple iPhone 15 Plus (256 GB) - Blue',
+    category: 'Smartphones',
+    brand: 'Apple',
+    image: '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
+    mrp: 89900,
+    dealPrice: 77990, // 13.2% discount (> 8%)
+    description: 'Dynamic Island, 48MP main camera, USB-C, and incredible all-day battery life with A16 Bionic chip.',
+    specs: [
+      '6.7" Super Retina XDR OLED Display',
+      'A16 Bionic Chip with 5-Core GPU',
+      '48MP Advanced Dual-Camera System',
+      'All-Day Battery Life up to 26 hours'
+    ],
+    inStock: true,
+    rating: 4.8,
+    reviewCount: 1840,
+    highlightBadge: 'Amazon Deal Sync · 13% OFF',
+    isDraft: true,
+    sourceFeed: 'Amazon',
+    fetchedAt: '2026-09-29T09:15:00Z',
+    emiPlans: [
+      { months: 3, perMonth: 25997, interestRate: 0, provider: 'HDFC No-Cost EMI', isNoCost: true },
+      { months: 6, perMonth: 12998, interestRate: 0, provider: 'Bajaj Insta EMI', isNoCost: true },
+      { months: 12, perMonth: 6932, interestRate: 13, provider: 'SBI Card EMI' }
+    ],
+    vendorSources: [
+      { name: 'Amazon', price: 74990, inStock: true, deliveryDays: 1, codAvailable: true, productUrl: 'https://amazon.in' },
+      { name: 'Flipkart', price: 75490, inStock: true, deliveryDays: 2, codAvailable: true, productUrl: 'https://flipkart.com' },
+      { name: 'Wholesaler', price: 72000, inStock: true, deliveryDays: 3, codAvailable: true, productUrl: 'https://wholesale-direct.in' }
+    ]
+  },
+  {
+    id: 'draft-asus-rog-strix',
+    title: 'ASUS ROG Strix G16 Gaming Laptop (16", RTX 4060, i7 13th Gen)',
+    category: 'Laptops',
+    brand: 'ASUS',
+    image: '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
+    mrp: 154990,
+    dealPrice: 134990, // 12.9% discount (> 8%)
+    description: 'Dominate esports with Intel Core i7-13650HX processor, NVIDIA GeForce RTX 4060 GPU with 140W max TGP, and 165Hz ROG Nebula Display.',
+    specs: [
+      '16" FHD+ 165Hz 100% sRGB Display with G-SYNC',
+      '13th Gen Intel Core i7-13650HX 14 Cores',
+      'NVIDIA GeForce RTX 4060 8GB GDDR6 (140W)',
+      '16GB DDR5 4800MHz & 1TB PCIe 4.0 NVMe SSD'
+    ],
+    inStock: true,
+    rating: 4.7,
+    reviewCount: 780,
+    highlightBadge: 'Flipkart Deal Sync · 13% OFF',
+    isDraft: true,
+    sourceFeed: 'Flipkart',
+    fetchedAt: '2026-09-29T09:20:00Z',
+    emiPlans: [
+      { months: 3, perMonth: 44997, interestRate: 0, provider: 'No-Cost ICICI', isNoCost: true },
+      { months: 6, perMonth: 22498, interestRate: 0, provider: 'HDFC EasyEMI', isNoCost: true },
+      { months: 12, perMonth: 11990, interestRate: 14, provider: 'Axis Bank EMI' }
+    ],
+    vendorSources: [
+      { name: 'Flipkart', price: 129990, inStock: true, deliveryDays: 2, codAvailable: true, productUrl: 'https://flipkart.com' },
+      { name: 'Amazon', price: 131990, inStock: true, deliveryDays: 2, codAvailable: true, productUrl: 'https://amazon.in' },
+      { name: 'Wholesaler', price: 126000, inStock: true, deliveryDays: 3, codAvailable: true, productUrl: 'https://wholesale-direct.in' }
+    ]
+  },
+  {
+    id: 'draft-bose-qc-ultra',
+    title: 'Bose QuietComfort Ultra Wireless Noise Cancelling Headphones',
+    category: 'Audio',
+    brand: 'Bose',
+    image: '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
+    mrp: 35900,
+    dealPrice: 29990, // 16.5% discount (> 8%)
+    description: 'World-class noise cancellation, breakthrough spatialized audio, and CustomTune technology to tailor sound to your ears.',
+    specs: [
+      'Immersive Spatialized Audio Technology',
+      'CustomTune Sound Calibration for Ear Shape',
+      'Up to 24-Hour Battery Life with USB-C Quick Charge',
+      'Ultra-Plush Protein Leather Ear Cushions'
+    ],
+    inStock: true,
+    rating: 4.8,
+    reviewCount: 1420,
+    highlightBadge: 'Amazon Deal Sync · 16% OFF',
+    isDraft: true,
+    sourceFeed: 'Amazon',
+    fetchedAt: '2026-09-29T09:25:00Z',
+    emiPlans: [
+      { months: 3, perMonth: 9997, interestRate: 0, provider: 'HDFC No-Cost EMI', isNoCost: true },
+      { months: 6, perMonth: 4998, interestRate: 0, provider: 'Bajaj Insta EMI', isNoCost: true },
+      { months: 12, perMonth: 2665, interestRate: 13, provider: 'SBI Card EMI' }
+    ],
+    vendorSources: [
+      { name: 'Amazon', price: 27990, inStock: true, deliveryDays: 1, codAvailable: true, productUrl: 'https://amazon.in' },
+      { name: 'Flipkart', price: 28490, inStock: true, deliveryDays: 2, codAvailable: true, productUrl: 'https://flipkart.com' },
+      { name: 'Wholesaler', price: 26500, inStock: true, deliveryDays: 3, codAvailable: true, productUrl: 'https://wholesale-direct.in' }
+    ]
+  }
+];
+
+// Rich pool of trending deals fetched when Admin clicks 'Fetch Trending Deals (>8% Off)'
 export const SYNCABLE_TRENDING_DEALS: DealItem[] = [
   {
     id: 'sync-samsung-s24-ultra',
@@ -231,7 +334,9 @@ export const SYNCABLE_TRENDING_DEALS: DealItem[] = [
     inStock: true,
     rating: 4.8,
     reviewCount: 1105,
-    highlightBadge: 'Amazon Deal Sync · 16% OFF',
+    highlightBadge: 'Amazon Sourced · 16% OFF',
+    isDraft: true,
+    sourceFeed: 'Amazon',
     emiPlans: [
       { months: 3, perMonth: 36333, interestRate: 0, provider: 'No-Cost EMI HDFC', isNoCost: true },
       { months: 6, perMonth: 18166, interestRate: 0, provider: 'Bajaj Insta EMI', isNoCost: true },
@@ -241,36 +346,6 @@ export const SYNCABLE_TRENDING_DEALS: DealItem[] = [
       { name: 'Amazon', price: 104990, inStock: true, deliveryDays: 1, codAvailable: true, productUrl: 'https://amazon.in' },
       { name: 'Flipkart', price: 106490, inStock: true, deliveryDays: 2, codAvailable: true, productUrl: 'https://flipkart.com' },
       { name: 'Wholesaler', price: 102500, inStock: true, deliveryDays: 3, codAvailable: true, productUrl: 'https://wholesale-direct.in' }
-    ]
-  },
-  {
-    id: 'sync-asus-rog-strix',
-    title: 'ASUS ROG Strix G16 Gaming Laptop (16", RTX 4060, i7 13th Gen)',
-    category: 'Laptops',
-    brand: 'ASUS',
-    image: '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
-    mrp: 154990,
-    dealPrice: 134990, // 12.9% discount (> 8%)
-    description: 'Dominate esports with Intel Core i7-13650HX processor, NVIDIA GeForce RTX 4060 GPU with 140W max TGP, and 165Hz ROG Nebula Display.',
-    specs: [
-      '16" FHD+ 165Hz 100% sRGB Display with G-SYNC',
-      '13th Gen Intel Core i7-13650HX 14 Cores',
-      'NVIDIA GeForce RTX 4060 8GB GDDR6 (140W)',
-      '16GB DDR5 4800MHz & 1TB PCIe 4.0 NVMe SSD'
-    ],
-    inStock: true,
-    rating: 4.7,
-    reviewCount: 780,
-    highlightBadge: 'Flipkart Deal Sync · 13% OFF',
-    emiPlans: [
-      { months: 3, perMonth: 44997, interestRate: 0, provider: 'No-Cost ICICI', isNoCost: true },
-      { months: 6, perMonth: 22498, interestRate: 0, provider: 'HDFC EasyEMI', isNoCost: true },
-      { months: 12, perMonth: 11990, interestRate: 14, provider: 'Axis Bank EMI' }
-    ],
-    vendorSources: [
-      { name: 'Flipkart', price: 129990, inStock: true, deliveryDays: 2, codAvailable: true, productUrl: 'https://flipkart.com' },
-      { name: 'Amazon', price: 131990, inStock: true, deliveryDays: 2, codAvailable: true, productUrl: 'https://amazon.in' },
-      { name: 'Wholesaler', price: 126000, inStock: true, deliveryDays: 3, codAvailable: true, productUrl: 'https://wholesale-direct.in' }
     ]
   },
   {
@@ -291,7 +366,9 @@ export const SYNCABLE_TRENDING_DEALS: DealItem[] = [
     inStock: true,
     rating: 4.9,
     reviewCount: 4210,
-    highlightBadge: 'Hot Sourced · 20% OFF',
+    highlightBadge: 'Flipkart Sourced · 20% OFF',
+    isDraft: true,
+    sourceFeed: 'Flipkart',
     emiPlans: [
       { months: 3, perMonth: 6663, interestRate: 0, provider: 'Apple Authorised No-Cost', isNoCost: true },
       { months: 6, perMonth: 3331, interestRate: 0, provider: 'Bajaj Insta EMI', isNoCost: true },
@@ -321,7 +398,9 @@ export const SYNCABLE_TRENDING_DEALS: DealItem[] = [
     inStock: true,
     rating: 4.8,
     reviewCount: 960,
-    highlightBadge: 'Amazon Lightning · 13% OFF',
+    highlightBadge: 'Amazon Sourced · 13% OFF',
+    isDraft: true,
+    sourceFeed: 'Amazon',
     emiPlans: [
       { months: 3, perMonth: 16330, interestRate: 0, provider: 'No-Cost HDFC', isNoCost: true },
       { months: 6, perMonth: 8165, interestRate: 0, provider: 'Bajaj Finserv Zero Down', isNoCost: true },
@@ -331,6 +410,38 @@ export const SYNCABLE_TRENDING_DEALS: DealItem[] = [
       { name: 'Wholesaler', price: 44200, inStock: true, deliveryDays: 2, codAvailable: true, productUrl: 'https://wholesale-direct.in' },
       { name: 'Amazon', price: 45990, inStock: true, deliveryDays: 1, codAvailable: true, productUrl: 'https://amazon.in' },
       { name: 'Flipkart', price: 46490, inStock: true, deliveryDays: 2, codAvailable: true, productUrl: 'https://flipkart.com' }
+    ]
+  },
+  {
+    id: 'sync-lenovo-legion',
+    title: 'Lenovo Legion Slim 5 AMD Ryzen 7 (16", RTX 4060, 16GB, 1TB SSD)',
+    category: 'Laptops',
+    brand: 'Lenovo',
+    image: '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
+    mrp: 132990,
+    dealPrice: 114990, // 13.5% discount (> 8%)
+    description: 'Powered by AMD Ryzen 7 7840HS and NVIDIA GeForce RTX 4060 with AI Engine+ Legion Coldfront 5.0 thermal technology.',
+    specs: [
+      '16" WQXGA 165Hz 100% sRGB 300nits Anti-Glare',
+      'AMD Ryzen 7 7840HS (8 Cores / 16 Threads)',
+      'NVIDIA GeForce RTX 4060 8GB GDDR6 (140W)',
+      '16GB DDR5 5600MHz & 1TB M.2 NVMe SSD'
+    ],
+    inStock: true,
+    rating: 4.8,
+    reviewCount: 650,
+    highlightBadge: 'Flipkart Sourced · 14% OFF',
+    isDraft: true,
+    sourceFeed: 'Flipkart',
+    emiPlans: [
+      { months: 3, perMonth: 38330, interestRate: 0, provider: 'No-Cost HDFC', isNoCost: true },
+      { months: 6, perMonth: 19165, interestRate: 0, provider: 'Bajaj Finserv Insta EMI', isNoCost: true },
+      { months: 12, perMonth: 10212, interestRate: 13, provider: 'Axis Bank EMI' }
+    ],
+    vendorSources: [
+      { name: 'Flipkart', price: 109990, inStock: true, deliveryDays: 2, codAvailable: true, productUrl: 'https://flipkart.com' },
+      { name: 'Amazon', price: 111990, inStock: true, deliveryDays: 2, codAvailable: true, productUrl: 'https://amazon.in' },
+      { name: 'Wholesaler', price: 106500, inStock: true, deliveryDays: 3, codAvailable: true, productUrl: 'https://wholesale-direct.in' }
     ]
   }
 ];

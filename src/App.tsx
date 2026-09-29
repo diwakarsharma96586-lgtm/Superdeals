@@ -80,7 +80,7 @@ const AppContent: React.FC = () => {
                 className="text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-1"
               >
                 <Lock className="w-3 h-3" />
-                <span>Staff & Merchant Login</span>
+                <span>Staff & Merchant Portal</span>
               </button>
             )}
           </div>

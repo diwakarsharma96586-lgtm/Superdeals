@@ -42,6 +42,9 @@ export interface DealItem {
   vendorSources: VendorSource[];
   highlightBadge?: string;
   description: string;
+  isDraft?: boolean;
+  sourceFeed?: 'Amazon' | 'Flipkart' | 'Wholesaler' | string;
+  fetchedAt?: string;
 }
 
 export interface OrderCustomer {

@@ -85,7 +85,7 @@ export const AdminLoginModal: React.FC = () => {
               </p>
             ) : (
               <p className="text-[11px] text-slate-400 text-center">
-                (Authorized Staff Demo PIN: <strong className="text-slate-600 font-mono">2026</strong>)
+                (Staff PIN: <strong className="text-slate-600 font-mono">2005</strong>)
               </p>
             )}
           </div>

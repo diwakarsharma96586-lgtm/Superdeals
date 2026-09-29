@@ -13,6 +13,7 @@ export const DealsCatalog: React.FC = () => {
 
   const CATEGORY_DEFAULT_IMAGES: Record<string, string> = {
     'Smartphones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
+    'iPhones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
     'Laptops': '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
     'Audio': '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
     'Gaming': '/src/assets/images/deals_gaming_console_1790689489683.jpg',

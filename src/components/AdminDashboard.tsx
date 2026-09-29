@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { Order, OrderStatus } from '../types';
+import { Order, DealItem } from '../types';
 import { 
   Bell, 
   ExternalLink, 
@@ -19,25 +19,46 @@ import {
   MapPin,
   Phone,
   RefreshCw,
-  Sparkles
+  Sparkles,
+  Layers,
+  Check,
+  Trash2,
+  Zap,
+  ArrowRight,
+  Eye
 } from 'lucide-react';
+
+const CATEGORY_DEFAULT_IMAGES: Record<string, string> = {
+  'Smartphones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
+  'iPhones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
+  'Laptops': '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
+  'Audio': '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
+  'Gaming': '/src/assets/images/deals_gaming_console_1790689489683.jpg',
+};
 
 export const AdminDashboard: React.FC = () => {
   const { 
     orders, 
+    draftDeals,
+    deals,
     fulfillOrderWithVendor, 
     updateOrderStatus, 
     setCurrentView,
     setActiveTrackingOrderId,
-    autoSyncTrendingDeals
+    fetchTrendingDraftDeals,
+    approveAndPublishDeal,
+    rejectDraftDeal,
+    approveAllDraftDeals
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'ALL' | 'NEW' | 'DISPATCHED' | 'DELIVERED'>('ALL');
+  // Top level mode: 'ORDERS' or 'DRAFTS'
+  const [activeSection, setActiveSection] = useState<'ORDERS' | 'DRAFTS'>('ORDERS');
+  const [orderSubTab, setOrderSubTab] = useState<'ALL' | 'NEW' | 'DISPATCHED' | 'DELIVERED'>('ALL');
   const [selectedOrderForSourcing, setSelectedOrderForSourcing] = useState<Order | null>(null);
 
-  // Auto-sync state
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
+  // Auto-fetch simulation state
+  const [isFetchingDeals, setIsFetchingDeals] = useState(false);
+  const [fetchBanner, setFetchBanner] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
 
   // Sourcing form state
   const [selectedVendor, setSelectedVendor] = useState<'Wholesaler' | 'Amazon' | 'Flipkart' | string>('Wholesaler');
@@ -59,9 +80,9 @@ export const AdminDashboard: React.FC = () => {
   const newOrders = orders.filter((o) => o.status === 'NEW_ORDER');
 
   const filteredOrders = orders.filter((order) => {
-    if (activeTab === 'NEW') return order.status === 'NEW_ORDER';
-    if (activeTab === 'DISPATCHED') return order.status === 'DISPATCHED' || order.status === 'OUT_FOR_DELIVERY';
-    if (activeTab === 'DELIVERED') return order.status === 'DELIVERED';
+    if (orderSubTab === 'NEW') return order.status === 'NEW_ORDER';
+    if (orderSubTab === 'DISPATCHED') return order.status === 'DISPATCHED' || order.status === 'OUT_FOR_DELIVERY';
+    if (orderSubTab === 'DELIVERED') return order.status === 'DELIVERED';
     return true;
   });
 
@@ -114,17 +135,42 @@ export const AdminDashboard: React.FC = () => {
     setSelectedOrderForSourcing(null);
   };
 
-  const handleAutoSync = () => {
-    setIsSyncing(true);
-    setSyncFeedback('Fetching Amazon & Flipkart feeds for verified deals with >8% discount...');
+  // Requirement: Auto-Fetch Simulation Button
+  const handleFetchTrendingDeals = () => {
+    setIsFetchingDeals(true);
+    setFetchBanner({
+      message: 'Connecting to Amazon India & Flipkart feeds... Filtering deals with >8% discount...',
+      type: 'info'
+    });
+
     setTimeout(() => {
-      const res = autoSyncTrendingDeals();
-      setIsSyncing(false);
-      setSyncFeedback(
-        `✅ Successfully synced ${res.addedCount} high-discount deals across Smartphones, Laptops, Audio & Gaming (>8% Off)!`
-      );
-      setTimeout(() => setSyncFeedback(null), 5000);
-    }, 800);
+      const res = fetchTrendingDraftDeals();
+      setIsFetchingDeals(false);
+      setActiveSection('DRAFTS'); // Switch directly to Draft Deals tab
+      setFetchBanner({
+        message: `✅ Fetched ${res.fetchedCount} trending deals (>8% discount) into Draft Deals Queue! Review margins & approve below.`,
+        type: 'success'
+      });
+      setTimeout(() => setFetchBanner(null), 6000);
+    }, 900);
+  };
+
+  const handleApproveDeal = (deal: DealItem) => {
+    approveAndPublishDeal(deal.id);
+    setFetchBanner({
+      message: `🎉 Published "${deal.title}" live to the main Deals Hub!`,
+      type: 'success'
+    });
+    setTimeout(() => setFetchBanner(null), 4000);
+  };
+
+  const handleApproveAll = () => {
+    const count = approveAllDraftDeals();
+    setFetchBanner({
+      message: `🚀 Batch Published ${count} draft deals to the public Deals Hub!`,
+      type: 'success'
+    });
+    setTimeout(() => setFetchBanner(null), 4000);
   };
 
   return (
@@ -133,441 +179,674 @@ export const AdminDashboard: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="text-xs font-bold uppercase tracking-wider text-indigo-600">
-            Admin Sourcing & Manual Fulfillment Hub
+            Admin Management Desk
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900">
-            Order Queue & Vendor Aggregator
+            Sourcing, Drafts & Manual Fulfillment
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Review incoming 10% Partial COD bookings, source from cheapest vendors (Amazon/Flipkart/Wholesalers), and upload COD tracking links.
+            Automated deal fetching, pre-publication draft review, margin approvals, and manual vendor COD order dispatch.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          {/* Mock Auto-Sync Deals Button as requested */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Requirement: Auto-Fetch Simulation Button */}
           <button
-            onClick={handleAutoSync}
-            disabled={isSyncing}
-            className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1.5"
+            onClick={handleFetchTrendingDeals}
+            disabled={isFetchingDeals}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-1.5"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-indigo-600 ${isSyncing ? 'animate-spin' : ''}`} />
-            <span>{isSyncing ? 'Syncing Feeds...' : 'Auto-Sync Deals (>8% Off)'}</span>
+            <RefreshCw className={`w-3.5 h-3.5 ${isFetchingDeals ? 'animate-spin' : ''}`} />
+            <span>{isFetchingDeals ? 'Scanning Live Feeds...' : 'Fetch Trending Deals (>8% Off)'}</span>
           </button>
 
           <button
             onClick={() => setCurrentView('marketplace')}
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors"
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5"
           >
-            Go to Customer Store
+            <Eye className="w-3.5 h-3.5" />
+            <span>Customer Store</span>
           </button>
         </div>
       </div>
 
-      {/* Auto-Sync Feedback Banner */}
-      {syncFeedback && (
-        <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl text-indigo-900 text-xs flex items-center justify-between shadow-xs animate-in fade-in-50 duration-200">
+      {/* Real-time Banner */}
+      {fetchBanner && (
+        <div
+          className={`p-4 rounded-xl border text-xs flex items-center justify-between shadow-xs animate-in fade-in-50 duration-200 ${
+            fetchBanner.type === 'success'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+              : 'bg-indigo-50 border-indigo-200 text-indigo-900'
+          }`}
+        >
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-indigo-600 shrink-0" />
-            <span className="font-semibold">{syncFeedback}</span>
+            <Sparkles className="w-4 h-4 shrink-0 text-indigo-600" />
+            <span className="font-semibold">{fetchBanner.message}</span>
           </div>
           <button
             onClick={() => setCurrentView('marketplace')}
-            className="text-xs font-bold text-indigo-700 underline hover:text-indigo-900 ml-4 shrink-0"
+            className="text-xs font-bold underline hover:opacity-80 ml-4 shrink-0"
           >
-            View in Deals Hub →
+            View Live Deals Hub →
           </button>
         </div>
       )}
 
-      {/* Step 3 Requirement: High-Priority Alert on Admin Dashboard */}
-      {newOrders.length > 0 && (
-        <section className="bg-amber-500/10 border-2 border-amber-500/60 rounded-2xl p-5 space-y-3">
-          <div className="flex items-center gap-2 text-amber-900 font-extrabold text-sm sm:text-base">
-            <Bell className="w-5 h-5 text-amber-600 animate-bounce" />
-            <span>Alert: {newOrders.length} New Order(s) Awaiting Vendor Sourcing</span>
+      {/* Primary Section Switcher: Orders vs Draft Deals */}
+      <div className="flex items-center gap-2 bg-slate-100/80 p-1.5 rounded-2xl w-fit border border-slate-200/80">
+        <button
+          onClick={() => setActiveSection('ORDERS')}
+          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold transition-all ${
+            activeSection === 'ORDERS'
+              ? 'bg-white text-slate-900 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Package className="w-4 h-4" />
+          <span>Customer Orders & COD Fulfillment ({orders.length})</span>
+          {newOrders.length > 0 && (
+            <span className="px-1.5 py-0.2 bg-amber-500 text-slate-950 font-bold rounded text-[10px]">
+              {newOrders.length} New
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveSection('DRAFTS')}
+          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold transition-all relative ${
+            activeSection === 'DRAFTS'
+              ? 'bg-indigo-600 text-white shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Layers className="w-4 h-4" />
+          <span>Draft Deals Queue</span>
+          <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${
+            activeSection === 'DRAFTS' ? 'bg-white text-indigo-700' : 'bg-indigo-100 text-indigo-800'
+          }`}>
+            {draftDeals.length}
+          </span>
+        </button>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* SECTION 1: DRAFT DEALS QUEUE (Dedicated Approval Flow)                    */}
+      {/* ========================================================================= */}
+      {activeSection === 'DRAFTS' && (
+        <section className="space-y-6">
+          {/* Drafts Action Bar */}
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <span>Draft Deals Waiting for Review</span>
+                <span className="px-2 py-0.5 text-xs font-bold bg-amber-100 text-amber-800 rounded-md">
+                  {draftDeals.length} Pending
+                </span>
+              </h2>
+              <p className="text-xs text-slate-500">
+                Fetched from Amazon & Flipkart. Review profit margins and 10% Partial COD booking deposit before publishing live to the public Deals Hub.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              {draftDeals.length > 0 && (
+                <button
+                  onClick={handleApproveAll}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-1.5"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Approve & Publish All ({draftDeals.length})</span>
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="space-y-2">
-            {newOrders.map((order) => (
-              <div
-                key={order.id}
-                className="bg-white rounded-xl p-4 border border-amber-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold bg-slate-900 text-white px-2 py-0.5 rounded">
-                      {order.id}
-                    </span>
-                    <span className="text-xs font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
-                      Partial COD Order Received: ₹{order.depositAmount.toLocaleString('en-IN')} Paid, ₹{order.remainingCodBalance.toLocaleString('en-IN')} Pending
-                    </span>
-                  </div>
-                  <div className="text-xs font-bold text-slate-900">
-                    {order.item.title}
-                  </div>
-                  <div className="text-xs text-slate-500">
-                    Buyer: {order.customer.fullName} · {order.customer.city}, {order.customer.state} ({order.customer.pincode}) · Phone: {order.customer.phone}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={() => openSourcingModal(order)}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm flex items-center gap-1.5"
-                  >
-                    <span>Source on Vendor Site (Amazon/Wholesale)</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+          {/* Draft Deals List */}
+          {draftDeals.length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 p-8 space-y-4">
+              <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400">
+                <Layers className="w-6 h-6" />
               </div>
-            ))}
-          </div>
+              <h3 className="text-base font-bold text-slate-900">
+                Draft Deals Queue is Clean
+              </h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                All fetched deals are currently live in the Deals Hub. Click below to fetch the latest high-discount trending items from live merchant feeds.
+              </p>
+              <button
+                onClick={handleFetchTrendingDeals}
+                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm inline-flex items-center gap-2"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Fetch Trending Deals (&gt;8% Off)</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {draftDeals.map((deal) => {
+                const deposit10 = Math.round(deal.dealPrice * 0.1);
+                const remaining90 = deal.dealPrice - deposit10;
+                const savings = deal.mrp - deal.dealPrice;
+                const savingsPercent = Math.round((savings / deal.mrp) * 100);
+
+                const sources = deal.vendorSources || [];
+                const cheapestSource = sources.slice().sort((a, b) => a.price - b.price)[0];
+                const estMargin = cheapestSource ? deal.dealPrice - cheapestSource.price : Math.round(deal.dealPrice * 0.08);
+
+                return (
+                  <div
+                    key={deal.id}
+                    className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4 hover:border-slate-300 transition-all shadow-sm flex flex-col justify-between"
+                  >
+                    <div className="space-y-3">
+                      {/* Category & Source Header */}
+                      <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                        <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+                          <span className="font-bold text-slate-800">{deal.brand}</span>
+                          <span aria-hidden="true">·</span>
+                          <span>{deal.category}</span>
+                          <span aria-hidden="true">·</span>
+                          <span className="text-indigo-600 font-semibold">{deal.sourceFeed || 'Auto-Feed'}</span>
+                        </div>
+
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                          {savingsPercent}% OFF (&gt;8% Qualified)
+                        </span>
+                      </div>
+
+                      {/* Main Product Info & Image */}
+                      <div className="flex items-start gap-4">
+                        <div className="w-24 h-20 aspect-[4/3] rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200 relative">
+                          <img
+                            src={deal.image}
+                            alt={deal.title}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const fallback = CATEGORY_DEFAULT_IMAGES[deal.category] || '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg';
+                              if ((e.currentTarget as HTMLImageElement).src !== fallback) {
+                                (e.currentTarget as HTMLImageElement).src = fallback;
+                              }
+                            }}
+                          />
+                        </div>
+
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <h3 className="text-sm font-bold text-slate-900 line-clamp-2 leading-snug">
+                            {deal.title}
+                          </h3>
+                          <div className="flex items-baseline gap-2 pt-0.5">
+                            <span className="text-base font-extrabold text-slate-900 tabular-nums">
+                              ₹{deal.dealPrice.toLocaleString('en-IN')}
+                            </span>
+                            <span className="text-xs text-slate-400 line-through tabular-nums">
+                              ₹{deal.mrp.toLocaleString('en-IN')}
+                            </span>
+                            <span className="text-xs font-semibold text-emerald-600">
+                              Save ₹{savings.toLocaleString('en-IN')}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Partial COD & Admin Profit Calculation Grid */}
+                      <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
+                        {/* 10% Partial COD Breakdown */}
+                        <div className="space-y-1">
+                          <div className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
+                            <Zap className="w-3.5 h-3.5 text-amber-500" />
+                            <span>10% Partial COD Rate:</span>
+                          </div>
+                          <div className="font-extrabold text-indigo-700 text-sm tabular-nums">
+                            ₹{deposit10.toLocaleString('en-IN')}
+                          </div>
+                          <div className="text-[10px] text-slate-500">
+                            Doorstep COD: ₹{remaining90.toLocaleString('en-IN')}
+                          </div>
+                        </div>
+
+                        {/* Sourcing Cost & Margin */}
+                        <div className="space-y-1 border-l border-slate-200 pl-3">
+                          <div className="text-[11px] text-slate-500 font-medium">
+                            Cheapest Source ({cheapestSource?.name || 'Wholesaler'}):
+                          </div>
+                          <div className="font-extrabold text-slate-900 text-sm tabular-nums">
+                            ₹{cheapestSource ? cheapestSource.price.toLocaleString('en-IN') : (deal.dealPrice - estMargin).toLocaleString('en-IN')}
+                          </div>
+                          <div className="text-[10px] text-emerald-700 font-bold">
+                            Estimated Profit: +₹{estMargin.toLocaleString('en-IN')}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Approval Action Bar */}
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-3">
+                      <button
+                        onClick={() => rejectDraftDeal(deal.id)}
+                        className="px-3 py-2 text-rose-600 hover:bg-rose-50 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Discard Draft</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleApproveDeal(deal)}
+                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-1.5"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Approve & Publish to Store</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
       )}
 
-      {/* Aggregate Financial KPIs */}
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-1">
-          <div className="text-xs font-semibold text-slate-500">
-            Total Advance Deposits Held (10%)
-          </div>
-          <div className="text-2xl font-extrabold text-indigo-700 tabular-nums">
-            ₹{totalDepositCollected.toLocaleString('en-IN')}
-          </div>
-          <div className="text-[11px] text-emerald-600 font-medium">
-            100% Secured online via payment gateway
-          </div>
-        </div>
+      {/* ========================================================================= */}
+      {/* SECTION 2: CUSTOMER ORDERS & VENDOR SOURCING FULFILLMENT DESK            */}
+      {/* ========================================================================= */}
+      {activeSection === 'ORDERS' && (
+        <section className="space-y-8">
+          {/* Step 3 Requirement: High-Priority Alert on Admin Dashboard */}
+          {newOrders.length > 0 && (
+            <section className="bg-amber-500/10 border-2 border-amber-500/60 rounded-2xl p-5 space-y-3">
+              <div className="flex items-center gap-2 text-amber-900 font-extrabold text-sm sm:text-base">
+                <Bell className="w-5 h-5 text-amber-600 animate-bounce" />
+                <span>Alert: {newOrders.length} New Order(s) Awaiting Vendor Sourcing</span>
+              </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-1">
-          <div className="text-xs font-semibold text-slate-500">
-            Total COD Balance on Delivery (90%)
-          </div>
-          <div className="text-2xl font-extrabold text-amber-700 tabular-nums">
-            ₹{totalCodPending.toLocaleString('en-IN')}
-          </div>
-          <div className="text-[11px] text-slate-500">
-            To be collected by Courier boys upon delivery
-          </div>
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-1">
-          <div className="text-xs font-semibold text-slate-500">
-            Estimated Sourcing Margin Profit
-          </div>
-          <div className="text-2xl font-extrabold text-emerald-700 tabular-nums">
-            ₹{totalAdminProfits.toLocaleString('en-IN')}
-          </div>
-          <div className="text-[11px] text-slate-500">
-            Difference between Deal Price & Vendor cost
-          </div>
-        </div>
-      </section>
-
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
-        {(['ALL', 'NEW', 'DISPATCHED', 'DELIVERED'] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-              activeTab === tab
-                ? 'bg-slate-900 text-white'
-                : 'text-slate-600 hover:text-slate-900 bg-slate-100'
-            }`}
-          >
-            {tab === 'ALL' && `All Orders (${orders.length})`}
-            {tab === 'NEW' && `Awaiting Sourcing (${newOrders.length})`}
-            {tab === 'DISPATCHED' && 'Dispatched / In-Transit'}
-            {tab === 'DELIVERED' && 'Delivered'}
-          </button>
-        ))}
-      </div>
-
-      {/* Orders Table / List */}
-      <div className="space-y-4">
-        {filteredOrders.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 text-slate-500 text-xs">
-            No orders found under this category.
-          </div>
-        ) : (
-          filteredOrders.map((order) => {
-            const isPartialCod = order.paymentType === 'PARTIAL_COD_10';
-            const sources = order.item.vendorSources || [];
-            const cheapestSource = sources.slice().sort((a, b) => a.price - b.price)[0];
-
-            return (
-              <div
-                key={order.id}
-                className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4 hover:border-slate-300 transition-all shadow-sm"
-              >
-                {/* Header row */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-slate-900">
-                      {order.id}
-                    </span>
-                    <span aria-hidden="true" className="text-slate-300">·</span>
-                    <span className="text-xs text-slate-500">
-                      {new Date(order.createdAt).toLocaleDateString('en-IN', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`text-xs font-bold px-2.5 py-1 rounded-md ${
-                        order.status === 'NEW_ORDER'
-                          ? 'bg-amber-100 text-amber-800'
-                          : order.status === 'DISPATCHED'
-                          ? 'bg-blue-100 text-blue-800'
-                          : order.status === 'OUT_FOR_DELIVERY'
-                          ? 'bg-indigo-100 text-indigo-800'
-                          : order.status === 'DELIVERED'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-rose-100 text-rose-800'
-                      }`}
-                    >
-                      {order.status === 'NEW_ORDER' && 'Needs Vendor Sourcing'}
-                      {order.status === 'DISPATCHED' && 'Dispatched (AWB Uploaded)'}
-                      {order.status === 'OUT_FOR_DELIVERY' && 'Out for Delivery'}
-                      {order.status === 'DELIVERED' && 'Delivered & Settled'}
-                      {order.status === 'CANCELLED_REJECTED' && 'Rejected (Deposit Kept)'}
-                    </span>
-
-                    <span className="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md">
-                      {isPartialCod ? '10% Partial COD' : 'Prepaid Full / EMI'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Main Order Details Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
-                  {/* Col 1: Product & Customer */}
-                  <div className="space-y-3">
-                    <div className="font-semibold text-slate-900 flex items-center gap-1.5">
-                      <ShoppingBag className="w-4 h-4 text-slate-500" />
-                      <span>Ordered Product</span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <img
-                        src={order.item.image}
-                        alt={order.item.title}
-                        className="w-14 h-12 object-cover rounded-lg bg-slate-100 border border-slate-200"
-                      />
-                      <div>
-                        <div className="font-bold text-slate-900 line-clamp-1">
-                          {order.item.title}
-                        </div>
-                        <div className="text-slate-500 text-[11px]">
-                          Deal Price: ₹{order.totalAmount.toLocaleString('en-IN')}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-2 border-t border-slate-100 space-y-1">
-                      <div className="font-semibold text-slate-900 flex items-center gap-1.5">
-                        <User className="w-3.5 h-3.5 text-slate-500" />
-                        <span>Customer Details</span>
-                      </div>
-                      <div className="text-slate-800 font-medium">
-                        {order.customer.fullName}
-                      </div>
-                      <div className="text-slate-600 flex items-center gap-1">
-                        <Phone className="w-3 h-3 text-slate-400" />
-                        <span>{order.customer.phone}</span>
-                      </div>
-                      <div className="text-slate-500 text-[11px] leading-tight">
-                        {order.customer.addressLine}, {order.customer.city}, {order.customer.state} - {order.customer.pincode}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Col 2: Payment & Financial breakdown */}
-                  <div className="space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                    <div className="font-semibold text-slate-900">
-                      Payment & Security Deposit Breakdown
-                    </div>
-
-                    <div className="space-y-1.5 text-[11px]">
-                      <div className="flex justify-between">
-                        <span className="text-slate-500">Total Order Value:</span>
-                        <span className="font-semibold text-slate-900 tabular-nums">
-                          ₹{order.totalAmount.toLocaleString('en-IN')}
+              <div className="space-y-2">
+                {newOrders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="bg-white rounded-xl p-4 border border-amber-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold bg-slate-900 text-white px-2 py-0.5 rounded">
+                          {order.id}
+                        </span>
+                        <span className="text-xs font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
+                          Partial COD Order Received: ₹{order.depositAmount.toLocaleString('en-IN')} Paid, ₹{order.remainingCodBalance.toLocaleString('en-IN')} Pending
                         </span>
                       </div>
-
-                      <div className="flex justify-between font-bold text-indigo-700 bg-indigo-50/80 p-1.5 rounded">
-                        <span>10% Advance Deposit Paid:</span>
-                        <span className="tabular-nums">
-                          ₹{order.depositAmount.toLocaleString('en-IN')}
-                        </span>
+                      <div className="text-xs font-bold text-slate-900">
+                        {order.item.title}
                       </div>
-
-                      {isPartialCod && (
-                        <div className="flex justify-between font-bold text-amber-800 bg-amber-50 p-1.5 rounded border border-amber-200">
-                          <span>Pending COD to Collect:</span>
-                          <span className="tabular-nums">
-                            ₹{order.remainingCodBalance.toLocaleString('en-IN')}
-                          </span>
-                        </div>
-                      )}
-
-                      <div className="flex justify-between text-slate-500 pt-1">
-                        <span>Txn Gateway ID:</span>
-                        <span className="font-mono text-[10px] text-slate-700">
-                          {order.paymentTxnId}
-                        </span>
+                      <div className="text-xs text-slate-500">
+                        Buyer: {order.customer.fullName} · {order.customer.city}, {order.customer.state} ({order.customer.pincode}) · Phone: {order.customer.phone}
                       </div>
                     </div>
-                  </div>
 
-                  {/* Col 3: Vendor Sourcing & Courier Status */}
-                  <div className="space-y-3">
-                    <div className="font-semibold text-slate-900 flex items-center justify-between">
-                      <span>Vendor Sourcing Status</span>
-                      {order.vendorFulfillment && (
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-                          Profit: +₹{order.vendorFulfillment.adminProfit.toLocaleString('en-IN')}
-                        </span>
-                      )}
-                    </div>
-
-                    {order.vendorFulfillment ? (
-                      <div className="space-y-2 text-[11px] bg-emerald-50/50 p-3 rounded-xl border border-emerald-100">
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Sourced Platform:</span>
-                          <span className="font-bold text-slate-900">
-                            {order.vendorFulfillment.vendorName}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Vendor Order ID:</span>
-                          <span className="font-mono font-semibold text-slate-900">
-                            {order.vendorFulfillment.vendorOrderId}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Courier & AWB:</span>
-                          <span className="font-semibold text-slate-900">
-                            {order.vendorFulfillment.courierPartner} ({order.vendorFulfillment.trackingNumber})
-                          </span>
-                        </div>
-                        <div className="pt-1">
-                          <a
-                            href={order.vendorFulfillment.trackingUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-1 text-indigo-600 font-bold hover:underline"
-                          >
-                            <span>Open Live Courier Tracking Link</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-2 text-[11px] bg-slate-50 p-3 rounded-xl border border-slate-200">
-                        <div className="text-slate-600">
-                          Recommended Cheapest Vendor:
-                        </div>
-                        {cheapestSource && (
-                          <div className="flex items-center justify-between bg-white p-2 rounded-lg border border-slate-200 font-medium">
-                            <span className="font-bold text-slate-900">{cheapestSource.name}</span>
-                            <span className="text-emerald-700 font-bold">
-                              ₹{cheapestSource.price.toLocaleString('en-IN')}
-                            </span>
-                            <span className="text-[10px] text-slate-500">
-                              (Est Profit: ₹{(order.totalAmount - cheapestSource.price).toLocaleString('en-IN')})
-                            </span>
-                          </div>
-                        )}
-                        <button
-                          onClick={() => openSourcingModal(order)}
-                          className="w-full mt-2 py-2 px-3 bg-slate-900 text-white rounded-lg font-bold hover:bg-slate-800 transition-colors flex items-center justify-center gap-1.5"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                          <span>Place Vendor COD Order</span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Action Toolbar for Order Status */}
-                <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="text-slate-500 font-medium">Update Status:</span>
-
-                    {order.status !== 'DISPATCHED' && !order.vendorFulfillment && (
+                    <div className="flex items-center gap-2 shrink-0">
                       <button
                         onClick={() => openSourcingModal(order)}
-                        className="px-2.5 py-1 text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-md font-semibold transition-colors"
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm flex items-center gap-1.5"
                       >
-                        Enter Sourced Tracking AWB
+                        <span>Source on Vendor Site (Amazon/Wholesale)</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
                       </button>
-                    )}
-
-                    {order.status === 'DISPATCHED' && (
-                      <button
-                        onClick={() => updateOrderStatus(order.id, 'OUT_FOR_DELIVERY')}
-                        className="px-2.5 py-1 text-xs bg-amber-50 text-amber-800 hover:bg-amber-100 rounded-md font-semibold transition-colors"
-                      >
-                        Mark Out for Delivery
-                      </button>
-                    )}
-
-                    {order.status === 'OUT_FOR_DELIVERY' && (
-                      <button
-                        onClick={() => updateOrderStatus(order.id, 'DELIVERED')}
-                        className="px-2.5 py-1 text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 rounded-md font-semibold transition-colors"
-                      >
-                        Mark Delivered (COD Collected)
-                      </button>
-                    )}
-
-                    {order.status !== 'DELIVERED' && order.status !== 'CANCELLED_REJECTED' && (
-                      <button
-                        onClick={() => {
-                          const confirmReject = window.confirm(
-                            'Customer rejected delivery without valid reason? 10% non-refundable deposit will be retained to cover reverse shipping cost.'
-                          );
-                          if (confirmReject) {
-                            updateOrderStatus(
-                              order.id,
-                              'CANCELLED_REJECTED',
-                              'Customer rejected delivery at doorstep. 10% advance deposit retained to cover courier return costs.'
-                            );
-                          }
-                        }}
-                        className="px-2.5 py-1 text-xs text-rose-600 hover:bg-rose-50 rounded-md font-medium transition-colors"
-                      >
-                        Handle Rejection (Retain Deposit)
-                      </button>
-                    )}
+                    </div>
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        setActiveTrackingOrderId(order.id);
-                        setCurrentView('tracking');
-                      }}
-                      className="text-slate-600 hover:text-slate-900 font-semibold underline text-xs"
-                    >
-                      Customer View & E-Receipt
-                    </button>
-                  </div>
-                </div>
+                ))}
               </div>
-            );
-          })
-        )}
-      </div>
+            </section>
+          )}
+
+          {/* Aggregate Financial KPIs */}
+          <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-1">
+              <div className="text-xs font-semibold text-slate-500">
+                Total Advance Deposits Held (10%)
+              </div>
+              <div className="text-2xl font-extrabold text-indigo-700 tabular-nums">
+                ₹{totalDepositCollected.toLocaleString('en-IN')}
+              </div>
+              <div className="text-[11px] text-emerald-600 font-medium">
+                100% Secured online via payment gateway
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-1">
+              <div className="text-xs font-semibold text-slate-500">
+                Total COD Balance on Delivery (90%)
+              </div>
+              <div className="text-2xl font-extrabold text-amber-700 tabular-nums">
+                ₹{totalCodPending.toLocaleString('en-IN')}
+              </div>
+              <div className="text-[11px] text-slate-500">
+                To be collected by Courier boys upon delivery
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-1">
+              <div className="text-xs font-semibold text-slate-500">
+                Estimated Sourcing Margin Profit
+              </div>
+              <div className="text-2xl font-extrabold text-emerald-700 tabular-nums">
+                ₹{totalAdminProfits.toLocaleString('en-IN')}
+              </div>
+              <div className="text-[11px] text-slate-500">
+                Difference between Deal Price & Vendor cost
+              </div>
+            </div>
+          </section>
+
+          {/* Filter Sub-Tabs for Orders */}
+          <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
+            {(['ALL', 'NEW', 'DISPATCHED', 'DELIVERED'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setOrderSubTab(tab)}
+                className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                  orderSubTab === tab
+                    ? 'bg-slate-900 text-white'
+                    : 'text-slate-600 hover:text-slate-900 bg-slate-100'
+                }`}
+              >
+                {tab === 'ALL' && `All Orders (${orders.length})`}
+                {tab === 'NEW' && `Awaiting Sourcing (${newOrders.length})`}
+                {tab === 'DISPATCHED' && 'Dispatched / In-Transit'}
+                {tab === 'DELIVERED' && 'Delivered'}
+              </button>
+            ))}
+          </div>
+
+          {/* Orders Table / List */}
+          <div className="space-y-4">
+            {filteredOrders.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 text-slate-500 text-xs">
+                No orders found under this category.
+              </div>
+            ) : (
+              filteredOrders.map((order) => {
+                const isPartialCod = order.paymentType === 'PARTIAL_COD_10';
+                const sources = order.item.vendorSources || [];
+                const cheapestSource = sources.slice().sort((a, b) => a.price - b.price)[0];
+
+                return (
+                  <div
+                    key={order.id}
+                    className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4 hover:border-slate-300 transition-all shadow-sm"
+                  >
+                    {/* Header row */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-slate-900">
+                          {order.id}
+                        </span>
+                        <span aria-hidden="true" className="text-slate-300">·</span>
+                        <span className="text-xs text-slate-500">
+                          {new Date(order.createdAt).toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-xs font-bold px-2.5 py-1 rounded-md ${
+                            order.status === 'NEW_ORDER'
+                              ? 'bg-amber-100 text-amber-800'
+                              : order.status === 'DISPATCHED'
+                              ? 'bg-blue-100 text-blue-800'
+                              : order.status === 'OUT_FOR_DELIVERY'
+                              ? 'bg-indigo-100 text-indigo-800'
+                              : order.status === 'DELIVERED'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-rose-100 text-rose-800'
+                          }`}
+                        >
+                          {order.status === 'NEW_ORDER' && 'Needs Vendor Sourcing'}
+                          {order.status === 'DISPATCHED' && 'Dispatched (AWB Uploaded)'}
+                          {order.status === 'OUT_FOR_DELIVERY' && 'Out for Delivery'}
+                          {order.status === 'DELIVERED' && 'Delivered & Settled'}
+                          {order.status === 'CANCELLED_REJECTED' && 'Rejected (Deposit Kept)'}
+                        </span>
+
+                        <span className="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md">
+                          {isPartialCod ? '10% Partial COD' : 'Prepaid Full / EMI'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Main Order Details Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
+                      {/* Col 1: Product & Customer */}
+                      <div className="space-y-3">
+                        <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+                          <ShoppingBag className="w-4 h-4 text-slate-500" />
+                          <span>Ordered Product</span>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <img
+                            src={order.item.image}
+                            alt={order.item.title}
+                            className="w-14 h-12 object-cover rounded-lg bg-slate-100 border border-slate-200"
+                            onError={(e) => {
+                              const fallback = CATEGORY_DEFAULT_IMAGES[order.item.category] || '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg';
+                              if ((e.currentTarget as HTMLImageElement).src !== fallback) {
+                                (e.currentTarget as HTMLImageElement).src = fallback;
+                              }
+                            }}
+                          />
+                          <div>
+                            <div className="font-bold text-slate-900 line-clamp-1">
+                              {order.item.title}
+                            </div>
+                            <div className="text-slate-500 text-[11px]">
+                              Deal Price: ₹{order.totalAmount.toLocaleString('en-IN')}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-100 space-y-1">
+                          <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+                            <User className="w-3.5 h-3.5 text-slate-500" />
+                            <span>Customer Details</span>
+                          </div>
+                          <div className="text-slate-800 font-medium">
+                            {order.customer.fullName}
+                          </div>
+                          <div className="text-slate-600 flex items-center gap-1">
+                            <Phone className="w-3 h-3 text-slate-400" />
+                            <span>{order.customer.phone}</span>
+                          </div>
+                          <div className="text-slate-500 text-[11px] leading-tight">
+                            {order.customer.addressLine}, {order.customer.city}, {order.customer.state} - {order.customer.pincode}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Col 2: Payment & Financial breakdown */}
+                      <div className="space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                        <div className="font-semibold text-slate-900">
+                          Payment & Security Deposit Breakdown
+                        </div>
+
+                        <div className="space-y-1.5 text-[11px]">
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Total Order Value:</span>
+                            <span className="font-semibold text-slate-900 tabular-nums">
+                              ₹{order.totalAmount.toLocaleString('en-IN')}
+                            </span>
+                          </div>
+
+                          <div className="flex justify-between font-bold text-indigo-700 bg-indigo-50/80 p-1.5 rounded">
+                            <span>10% Advance Deposit Paid:</span>
+                            <span className="tabular-nums">
+                              ₹{order.depositAmount.toLocaleString('en-IN')}
+                            </span>
+                          </div>
+
+                          {isPartialCod && (
+                            <div className="flex justify-between font-bold text-amber-800 bg-amber-50 p-1.5 rounded border border-amber-200">
+                              <span>Pending COD to Collect:</span>
+                              <span className="tabular-nums">
+                                ₹{order.remainingCodBalance.toLocaleString('en-IN')}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="flex justify-between text-slate-500 pt-1">
+                            <span>Txn Gateway ID:</span>
+                            <span className="font-mono text-[10px] text-slate-700">
+                              {order.paymentTxnId}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Col 3: Vendor Sourcing & Courier Status */}
+                      <div className="space-y-3">
+                        <div className="font-semibold text-slate-900 flex items-center justify-between">
+                          <span>Vendor Sourcing Status</span>
+                          {order.vendorFulfillment && (
+                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                              Profit: +₹{order.vendorFulfillment.adminProfit.toLocaleString('en-IN')}
+                            </span>
+                          )}
+                        </div>
+
+                        {order.vendorFulfillment ? (
+                          <div className="space-y-2 text-[11px] bg-emerald-50/50 p-3 rounded-xl border border-emerald-100">
+                            <div className="flex justify-between">
+                              <span className="text-slate-600">Sourced Platform:</span>
+                              <span className="font-bold text-slate-900">
+                                {order.vendorFulfillment.vendorName}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-600">Vendor Order ID:</span>
+                              <span className="font-mono font-semibold text-slate-900">
+                                {order.vendorFulfillment.vendorOrderId}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-600">Courier & AWB:</span>
+                              <span className="font-semibold text-slate-900">
+                                {order.vendorFulfillment.courierPartner} ({order.vendorFulfillment.trackingNumber})
+                              </span>
+                            </div>
+                            <div className="pt-1">
+                              <a
+                                href={order.vendorFulfillment.trackingUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 text-indigo-600 font-bold hover:underline"
+                              >
+                                <span>Open Live Courier Tracking Link</span>
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-2 text-[11px] bg-slate-50 p-3 rounded-xl border border-slate-200">
+                            <div className="text-slate-600">
+                              Recommended Cheapest Vendor:
+                            </div>
+                            {cheapestSource && (
+                              <div className="flex items-center justify-between bg-white p-2 rounded-lg border border-slate-200 font-medium">
+                                <span className="font-bold text-slate-900">{cheapestSource.name}</span>
+                                <span className="text-emerald-700 font-bold">
+                                  ₹{cheapestSource.price.toLocaleString('en-IN')}
+                                </span>
+                                <span className="text-[10px] text-slate-500">
+                                  (Est Profit: ₹{(order.totalAmount - cheapestSource.price).toLocaleString('en-IN')})
+                                </span>
+                              </div>
+                            )}
+                            <button
+                              onClick={() => openSourcingModal(order)}
+                              className="w-full mt-2 py-2 px-3 bg-slate-900 text-white rounded-lg font-bold hover:bg-slate-800 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                              <span>Place Vendor COD Order</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Action Toolbar for Order Status */}
+                    <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-500 font-medium">Update Status:</span>
+
+                        {order.status !== 'DISPATCHED' && !order.vendorFulfillment && (
+                          <button
+                            onClick={() => openSourcingModal(order)}
+                            className="px-2.5 py-1 text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-md font-semibold transition-colors"
+                          >
+                            Enter Sourced Tracking AWB
+                          </button>
+                        )}
+
+                        {order.status === 'DISPATCHED' && (
+                          <button
+                            onClick={() => updateOrderStatus(order.id, 'OUT_FOR_DELIVERY')}
+                            className="px-2.5 py-1 text-xs bg-amber-50 text-amber-800 hover:bg-amber-100 rounded-md font-semibold transition-colors"
+                          >
+                            Mark Out for Delivery
+                          </button>
+                        )}
+
+                        {order.status === 'OUT_FOR_DELIVERY' && (
+                          <button
+                            onClick={() => updateOrderStatus(order.id, 'DELIVERED')}
+                            className="px-2.5 py-1 text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 rounded-md font-semibold transition-colors"
+                          >
+                            Mark Delivered (COD Collected)
+                          </button>
+                        )}
+
+                        {order.status !== 'DELIVERED' && order.status !== 'CANCELLED_REJECTED' && (
+                          <button
+                            onClick={() => {
+                              const confirmReject = window.confirm(
+                                'Customer rejected delivery without valid reason? 10% non-refundable deposit will be retained to cover reverse shipping cost.'
+                              );
+                              if (confirmReject) {
+                                updateOrderStatus(
+                                  order.id,
+                                  'CANCELLED_REJECTED',
+                                  'Customer rejected delivery at doorstep. 10% advance deposit retained to cover courier return costs.'
+                                );
+                              }
+                            }}
+                            className="px-2.5 py-1 text-xs text-rose-600 hover:bg-rose-50 rounded-md font-medium transition-colors"
+                          >
+                            Handle Rejection (Retain Deposit)
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            setActiveTrackingOrderId(order.id);
+                            setCurrentView('tracking');
+                          }}
+                          className="text-slate-600 hover:text-slate-900 font-semibold underline text-xs"
+                        >
+                          Customer View & E-Receipt
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </section>
+      )}
 
       {/* SOURCING MODAL (Step 3: Admin Manual Fulfillment Workflow) */}
       {selectedOrderForSourcing && (

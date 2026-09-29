@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { X, PlusCircle, Tag } from 'lucide-react';
+import { X, PlusCircle, Tag, Layers, Check } from 'lucide-react';
 
 export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const { addNewDeal } = useApp();
@@ -12,6 +12,7 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
   const [dealPrice, setDealPrice] = useState<number>(44990);
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('/src/assets/images/deals_smartphone_flagship_1790689474273.jpg');
+  const [saveAsDraft, setSaveAsDraft] = useState(true);
 
   const CATEGORY_IMAGES: Record<string, string> = {
     'Smartphones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
@@ -26,6 +27,7 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
       setImage(CATEGORY_IMAGES[newCat]);
     }
   };
+
   const [amazonCost, setAmazonCost] = useState<number>(41990);
   const [flipkartCost, setFlipkartCost] = useState<number>(42490);
   const [wholesalerCost, setWholesalerCost] = useState<number>(39900);
@@ -45,10 +47,11 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
       mrp: Number(mrp),
       dealPrice: Number(dealPrice),
       description: description || 'High demand product with genuine warranty and fast dispatch.',
-      image: image || '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
-      specs: ['100% Genuine Authorized Stock', '1 Year Brand Warranty', 'Pan-India Delivery'],
+      image: image || CATEGORY_IMAGES[category] || '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
+      specs: ['100% Genuine Authorized Stock', '1 Year Brand Warranty', 'Pan-India Fast Dispatch'],
       inStock: true,
-      highlightBadge: 'New Deal Added',
+      highlightBadge: 'Manual Listing',
+      sourceFeed: 'Manual Entry',
       emiPlans: [
         { months: 3, perMonth: Math.round(dealPrice / 3), interestRate: 0, provider: 'No-Cost EMI HDFC', isNoCost: true },
         { months: 6, perMonth: baseEmi, interestRate: 0, provider: 'Bajaj Finserv Zero Down', isNoCost: true },
@@ -59,7 +62,7 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
         { name: 'Amazon', price: Number(amazonCost), inStock: true, deliveryDays: 1, codAvailable: true, productUrl: '#' },
         { name: 'Flipkart', price: Number(flipkartCost), inStock: true, deliveryDays: 2, codAvailable: true, productUrl: '#' },
       ],
-    });
+    }, saveAsDraft);
 
     onClose();
   };
@@ -70,7 +73,7 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white">
           <div className="flex items-center gap-2">
             <PlusCircle className="w-5 h-5 text-indigo-400" />
-            <span className="text-sm font-bold">List New Deal on Aggregator</span>
+            <span className="text-sm font-bold">List New Deal</span>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-white">
             <X className="w-5 h-5" />
@@ -84,7 +87,7 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. OnePlus 12 5G (Silky Black, 256GB)"
+              placeholder="e.g. Apple iPhone 15 Pro Max (256GB, Natural Titanium)"
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900"
               required
             />
@@ -97,7 +100,7 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
                 type="text"
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
-                placeholder="e.g. OnePlus / Apple"
+                placeholder="e.g. Apple / Sony / ASUS"
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900"
                 required
               />
@@ -178,6 +181,34 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
             </div>
           </div>
 
+          {/* Workflow Destination Choice */}
+          <div className="p-3 bg-indigo-50/70 border border-indigo-200 rounded-xl space-y-2">
+            <div className="text-[11px] font-bold text-indigo-950">
+              Workflow Destination
+            </div>
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="radio"
+                  checked={saveAsDraft}
+                  onChange={() => setSaveAsDraft(true)}
+                  className="text-indigo-600"
+                />
+                <span className="font-semibold text-slate-800">Save to Draft Deals (Review Margins First)</span>
+              </label>
+
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="radio"
+                  checked={!saveAsDraft}
+                  onChange={() => setSaveAsDraft(false)}
+                  className="text-indigo-600"
+                />
+                <span className="text-slate-600">Publish Immediately</span>
+              </label>
+            </div>
+          </div>
+
           <div className="flex items-center justify-end gap-2 pt-2">
             <button
               type="button"
@@ -190,7 +221,7 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
               type="submit"
               className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm"
             >
-              Publish Deal to Storefront
+              {saveAsDraft ? 'Add to Draft Deals Queue' : 'Publish Directly to Storefront'}
             </button>
           </div>
         </form>

@@ -1,9 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { DealItem, Order, OrderStatus } from '../types';
-import { INITIAL_DEALS, INITIAL_SAMPLE_ORDERS, SYNCABLE_TRENDING_DEALS } from '../data/mockDeals';
+import { 
+  INITIAL_DEALS, 
+  INITIAL_DRAFT_DEALS, 
+  INITIAL_SAMPLE_ORDERS, 
+  SYNCABLE_TRENDING_DEALS 
+} from '../data/mockDeals';
 
 interface AppContextType {
   deals: DealItem[];
+  draftDeals: DealItem[];
   orders: Order[];
   currentView: 'marketplace' | 'admin' | 'tracking';
   setCurrentView: (view: 'marketplace' | 'admin' | 'tracking') => void;
@@ -20,8 +26,11 @@ interface AppContextType {
   unlockAdmin: (pin: string) => boolean;
   logoutAdmin: () => void;
   // Actions
-  addNewDeal: (deal: Omit<DealItem, 'id' | 'rating' | 'reviewCount'>) => void;
-  autoSyncTrendingDeals: () => { addedCount: number; totalQualified: number };
+  addNewDeal: (deal: Omit<DealItem, 'id' | 'rating' | 'reviewCount'>, asDraft?: boolean) => void;
+  fetchTrendingDraftDeals: () => { fetchedCount: number; platformBreakdown: string };
+  approveAndPublishDeal: (dealId: string) => void;
+  rejectDraftDeal: (dealId: string) => void;
+  approveAllDraftDeals: () => number;
   placeOrder: (
     newOrderData: Omit<Order, 'id' | 'createdAt' | 'status' | 'notifications'>
   ) => Order;
@@ -44,9 +53,10 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const STORAGE_KEY_DEALS = 'deals_aggregator_items_v3';
-const STORAGE_KEY_ORDERS = 'deals_aggregator_orders_v3';
-const ADMIN_SECRET_PIN = '2026';
+const STORAGE_KEY_DEALS = 'deals_aggregator_items_v4';
+const STORAGE_KEY_DRAFTS = 'deals_aggregator_drafts_v4';
+const STORAGE_KEY_ORDERS = 'deals_aggregator_orders_v4';
+const ADMIN_SECRET_PIN = '2005';
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [deals, setDeals] = useState<DealItem[]>(() => {
@@ -57,6 +67,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // fallback
     }
     return INITIAL_DEALS;
+  });
+
+  const [draftDeals, setDraftDeals] = useState<DealItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_DRAFTS);
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // fallback
+    }
+    return INITIAL_DRAFT_DEALS;
   });
 
   const [orders, setOrders] = useState<Order[]>(() => {
@@ -92,6 +112,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // ignore
     }
   }, [deals]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_DRAFTS, JSON.stringify(draftDeals));
+    } catch {
+      // ignore
+    }
+  }, [draftDeals]);
 
   useEffect(() => {
     try {
@@ -136,51 +164,115 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setViewInternal('marketplace');
   };
 
-  const addNewDeal = (dealData: Omit<DealItem, 'id' | 'rating' | 'reviewCount'>) => {
+  const addNewDeal = (
+    dealData: Omit<DealItem, 'id' | 'rating' | 'reviewCount'>, 
+    asDraft: boolean = false
+  ) => {
     const newDeal: DealItem = {
       ...dealData,
       id: `deal-${Date.now()}`,
       rating: 4.8,
       reviewCount: 1,
+      isDraft: asDraft,
+      fetchedAt: new Date().toISOString(),
     };
-    setDeals((prev) => [newDeal, ...prev]);
+
+    if (asDraft) {
+      setDraftDeals((prev) => [newDeal, ...prev]);
+    } else {
+      setDeals((prev) => [newDeal, ...prev]);
+    }
   };
 
-  // Auto-sync deals from Amazon/Flipkart feeds with >8% discount
-  const autoSyncTrendingDeals = () => {
-    // Filter only those with discount > 8%
-    const qualifiedSyncDeals = SYNCABLE_TRENDING_DEALS.filter((d) => {
+  // Fetch live trending deals from Amazon/Flipkart with >8% discount into Draft queue
+  const fetchTrendingDraftDeals = () => {
+    // Only items with discount strictly > 8%
+    const qualifiedItems = SYNCABLE_TRENDING_DEALS.filter((d) => {
       const discount = ((d.mrp - d.dealPrice) / d.mrp) * 100;
       return discount > 8;
     });
 
-    let addedCount = 0;
-    setDeals((currentDeals) => {
-      const existingIds = new Set(currentDeals.map((d) => d.id));
-      const newlyAdded: DealItem[] = [];
+    let count = 0;
+    const nowIso = new Date().toISOString();
 
-      for (const item of qualifiedSyncDeals) {
-        if (!existingIds.has(item.id)) {
-          newlyAdded.push(item);
-          addedCount++;
+    setDraftDeals((currentDrafts) => {
+      const existingDraftIds = new Set(currentDrafts.map((d) => d.id));
+      const existingLiveIds = new Set(deals.map((d) => d.id));
+      const newlyFetched: DealItem[] = [];
+
+      for (const item of qualifiedItems) {
+        if (!existingDraftIds.has(item.id) && !existingLiveIds.has(item.id)) {
+          newlyFetched.push({
+            ...item,
+            isDraft: true,
+            fetchedAt: nowIso,
+          });
+          count++;
         }
       }
 
-      if (newlyAdded.length === 0) {
-        // If all are already synced, generate fresh batch with dynamic timestamp IDs
-        const freshClones = qualifiedSyncDeals.map((d) => ({
+      if (newlyFetched.length === 0) {
+        // If already in queue, simulate new trending batch clones with timestamp
+        const clones = qualifiedItems.map((d) => ({
           ...d,
-          id: `sync-deal-${Date.now()}-${d.category.toLowerCase().slice(0, 4)}`,
+          id: `fetch-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
           title: `Trending: ${d.title}`,
+          isDraft: true,
+          fetchedAt: nowIso,
         }));
-        addedCount = freshClones.length;
-        return [...freshClones, ...currentDeals];
+        count = clones.length;
+        return [...clones, ...currentDrafts];
       }
 
-      return [...newlyAdded, ...currentDeals];
+      return [...newlyFetched, ...currentDrafts];
     });
 
-    return { addedCount, totalQualified: qualifiedSyncDeals.length };
+    return { 
+      fetchedCount: count, 
+      platformBreakdown: 'Amazon India & Flipkart High-Discount Feeds' 
+    };
+  };
+
+  // Approve & Publish from Drafts to Live Deals Hub
+  const approveAndPublishDeal = (dealId: string) => {
+    const itemToApprove = draftDeals.find((d) => d.id === dealId);
+    if (!itemToApprove) return;
+
+    // Remove from draft deals
+    setDraftDeals((prev) => prev.filter((d) => d.id !== dealId));
+
+    // Add to live deals (isDraft set to false)
+    const publishedItem: DealItem = {
+      ...itemToApprove,
+      isDraft: false,
+    };
+
+    setDeals((prev) => [publishedItem, ...prev.filter((d) => d.id !== dealId)]);
+  };
+
+  // Reject / Dismiss a draft deal
+  const rejectDraftDeal = (dealId: string) => {
+    setDraftDeals((prev) => prev.filter((d) => d.id !== dealId));
+  };
+
+  // 1-Click Batch Approve All Drafts
+  const approveAllDraftDeals = () => {
+    const count = draftDeals.length;
+    if (count === 0) return 0;
+
+    const publishedItems: DealItem[] = draftDeals.map((item) => ({
+      ...item,
+      isDraft: false,
+    }));
+
+    setDeals((prev) => {
+      const existingIds = new Set(prev.map((d) => d.id));
+      const newlyPublished = publishedItems.filter((item) => !existingIds.has(item.id));
+      return [...newlyPublished, ...prev];
+    });
+
+    setDraftDeals([]);
+    return count;
   };
 
   const placeOrder = (
@@ -321,8 +413,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const resetDemoData = () => {
     setDeals(INITIAL_DEALS);
+    setDraftDeals(INITIAL_DRAFT_DEALS);
     setOrders(INITIAL_SAMPLE_ORDERS);
     localStorage.removeItem(STORAGE_KEY_DEALS);
+    localStorage.removeItem(STORAGE_KEY_DRAFTS);
     localStorage.removeItem(STORAGE_KEY_ORDERS);
   };
 
@@ -330,6 +424,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     <AppContext.Provider
       value={{
         deals,
+        draftDeals,
         orders,
         currentView,
         setCurrentView,
@@ -345,7 +440,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         unlockAdmin,
         logoutAdmin,
         addNewDeal,
-        autoSyncTrendingDeals,
+        fetchTrendingDraftDeals,
+        approveAndPublishDeal,
+        rejectDraftDeal,
+        approveAllDraftDeals,
         placeOrder,
         fulfillOrderWithVendor,
         updateOrderStatus,

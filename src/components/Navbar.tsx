@@ -146,14 +146,14 @@ export const Navbar: React.FC = () => {
                 )}
               </button>
             ) : (
-              /* Public View: Secret Staff Login button */
+              /* Public View: Discreet Staff & Merchant Portal button */
               <button
                 onClick={() => setIsAdminLoginModalOpen(true)}
-                title="Staff / Merchant Admin Portal"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200/80 rounded-lg transition-colors"
+                title="Staff & Merchant Portal Access"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200/80 rounded-lg transition-colors border border-slate-200/60"
               >
                 <Lock className="w-3.5 h-3.5 text-slate-400" />
-                <span>Staff Portal</span>
+                <span>Staff & Merchant Portal</span>
               </button>
             )}
           </div>
@@ -190,13 +190,13 @@ export const Navbar: React.FC = () => {
               )}
             </button>
           ) : (
-            <button
-              onClick={() => setIsAdminLoginModalOpen(true)}
-              className="py-1 px-2 font-medium text-slate-400 flex items-center gap-1"
-            >
-              <Lock className="w-3 h-3" />
-              <span>Staff Login</span>
-            </button>
+              <button
+                onClick={() => setIsAdminLoginModalOpen(true)}
+                className="py-1 px-2 font-medium text-slate-400 flex items-center gap-1"
+              >
+                <Lock className="w-3 h-3" />
+                <span>Staff & Merchant</span>
+              </button>
           )}
         </div>
       </div>
