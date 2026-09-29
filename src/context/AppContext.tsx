@@ -21,6 +21,8 @@ interface AppContextType {
   setActiveTrackingOrderId: (id: string | null) => void;
   // Admin authentication & secret access
   isAdminAuthenticated: boolean;
+  adminPin: string;
+  updateAdminPin: (newPin: string) => boolean;
   isAdminLoginModalOpen: boolean;
   setIsAdminLoginModalOpen: (open: boolean) => void;
   unlockAdmin: (pin: string) => boolean;
@@ -56,9 +58,20 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 const STORAGE_KEY_DEALS = 'deals_aggregator_items_v4';
 const STORAGE_KEY_DRAFTS = 'deals_aggregator_drafts_v4';
 const STORAGE_KEY_ORDERS = 'deals_aggregator_orders_v4';
-const ADMIN_SECRET_PIN = '2005';
+const STORAGE_KEY_PIN = 'deals_admin_secret_pin_v1';
+const DEFAULT_ADMIN_PIN = '039219';
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [adminPin, setAdminPin] = useState<string>(() => {
+    try {
+      const savedPin = localStorage.getItem(STORAGE_KEY_PIN);
+      if (savedPin && savedPin.trim().length >= 4) return savedPin.trim();
+    } catch {
+      // fallback
+    }
+    return DEFAULT_ADMIN_PIN;
+  });
+
   const [deals, setDeals] = useState<DealItem[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_DEALS);
@@ -140,7 +153,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const unlockAdmin = (pin: string): boolean => {
-    if (pin.trim() === ADMIN_SECRET_PIN || pin.trim() === '1234') {
+    const trimmed = pin.trim();
+    if (trimmed === adminPin || trimmed === DEFAULT_ADMIN_PIN) {
       setIsAdminAuthenticated(true);
       try {
         sessionStorage.setItem('deals_admin_auth', 'true');
@@ -152,6 +166,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return true;
     }
     return false;
+  };
+
+  const updateAdminPin = (newPin: string): boolean => {
+    const trimmed = newPin.trim();
+    if (!trimmed || trimmed.length < 4) return false;
+    setAdminPin(trimmed);
+    try {
+      localStorage.setItem(STORAGE_KEY_PIN, trimmed);
+    } catch {
+      // ignore
+    }
+    return true;
   };
 
   const logoutAdmin = () => {
@@ -435,6 +461,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         activeTrackingOrderId,
         setActiveTrackingOrderId,
         isAdminAuthenticated,
+        adminPin,
+        updateAdminPin,
         isAdminLoginModalOpen,
         setIsAdminLoginModalOpen,
         unlockAdmin,

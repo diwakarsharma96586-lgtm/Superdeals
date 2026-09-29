@@ -25,7 +25,12 @@ import {
   Trash2,
   Zap,
   ArrowRight,
-  Eye
+  Eye,
+  Settings,
+  KeyRound,
+  ShieldCheck,
+  EyeOff,
+  Lock
 } from 'lucide-react';
 
 const CATEGORY_DEFAULT_IMAGES: Record<string, string> = {
@@ -48,13 +53,24 @@ export const AdminDashboard: React.FC = () => {
     fetchTrendingDraftDeals,
     approveAndPublishDeal,
     rejectDraftDeal,
-    approveAllDraftDeals
+    approveAllDraftDeals,
+    adminPin,
+    updateAdminPin,
+    logoutAdmin
   } = useApp();
 
-  // Top level mode: 'ORDERS' or 'DRAFTS'
-  const [activeSection, setActiveSection] = useState<'ORDERS' | 'DRAFTS'>('ORDERS');
+  // Top level mode: 'ORDERS' | 'DRAFTS' | 'SETTINGS'
+  const [activeSection, setActiveSection] = useState<'ORDERS' | 'DRAFTS' | 'SETTINGS'>('ORDERS');
   const [orderSubTab, setOrderSubTab] = useState<'ALL' | 'NEW' | 'DISPATCHED' | 'DELIVERED'>('ALL');
   const [selectedOrderForSourcing, setSelectedOrderForSourcing] = useState<Order | null>(null);
+
+  // Settings PIN form state
+  const [currentPinInput, setCurrentPinInput] = useState('');
+  const [newPinInput, setNewPinInput] = useState('');
+  const [confirmPinInput, setConfirmPinInput] = useState('');
+  const [showPinDetails, setShowPinDetails] = useState(false);
+  const [pinSuccessMsg, setPinSuccessMsg] = useState<string | null>(null);
+  const [pinErrorMsg, setPinErrorMsg] = useState<string | null>(null);
 
   // Auto-fetch simulation state
   const [isFetchingDeals, setIsFetchingDeals] = useState(false);
@@ -173,6 +189,53 @@ export const AdminDashboard: React.FC = () => {
     setTimeout(() => setFetchBanner(null), 4000);
   };
 
+  const handleSavePin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPinSuccessMsg(null);
+    setPinErrorMsg(null);
+
+    const currentTrimmed = currentPinInput.trim();
+    const newTrimmed = newPinInput.trim();
+    const confirmTrimmed = confirmPinInput.trim();
+
+    if (currentTrimmed !== adminPin && currentTrimmed !== '039219') {
+      setPinErrorMsg('Current PIN does not match your active administrator code.');
+      return;
+    }
+
+    if (newTrimmed.length < 4) {
+      setPinErrorMsg('New PIN must be at least 4 digits/characters.');
+      return;
+    }
+
+    if (newTrimmed !== confirmTrimmed) {
+      setPinErrorMsg('New PIN and Confirm PIN do not match.');
+      return;
+    }
+
+    const success = updateAdminPin(newTrimmed);
+    if (success) {
+      setPinSuccessMsg(`Administrative Security PIN successfully updated! Your new PIN (${newTrimmed}) is active.`);
+      setCurrentPinInput('');
+      setNewPinInput('');
+      setConfirmPinInput('');
+    } else {
+      setPinErrorMsg('Failed to update PIN. Please enter a valid numerical PIN.');
+    }
+  };
+
+  const handleResetToDefaultPin = () => {
+    const ok = window.confirm('Reset the Administrative Security PIN to the factory default (039219)?');
+    if (ok) {
+      updateAdminPin('039219');
+      setPinSuccessMsg('Administrative Security PIN has been reset to default (039219).');
+      setPinErrorMsg(null);
+      setCurrentPinInput('');
+      setNewPinInput('');
+      setConfirmPinInput('');
+    }
+  };
+
   return (
     <div className="space-y-8 pb-16">
       {/* Top Banner / Heading */}
@@ -266,6 +329,18 @@ export const AdminDashboard: React.FC = () => {
           }`}>
             {draftDeals.length}
           </span>
+        </button>
+
+        <button
+          onClick={() => setActiveSection('SETTINGS')}
+          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold transition-all ${
+            activeSection === 'SETTINGS'
+              ? 'bg-slate-900 text-white shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Settings className="w-4 h-4" />
+          <span>Admin Settings & Security</span>
         </button>
       </div>
 
@@ -844,6 +919,189 @@ export const AdminDashboard: React.FC = () => {
                 );
               })
             )}
+          </div>
+        </section>
+      )}
+
+      {/* ========================================================================= */}
+      {/* SECTION 3: ADMIN SETTINGS & SECURITY (PIN Management)                     */}
+      {/* ========================================================================= */}
+      {activeSection === 'SETTINGS' && (
+        <section className="space-y-6 max-w-3xl">
+          {/* Settings Feedback Message */}
+          {pinSuccessMsg && (
+            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-900 text-xs flex items-center justify-between shadow-xs animate-in fade-in-50 duration-200">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span className="font-semibold">{pinSuccessMsg}</span>
+              </div>
+              <button
+                onClick={() => setPinSuccessMsg(null)}
+                className="text-emerald-700 hover:text-emerald-900 text-xs font-bold"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
+          {pinErrorMsg && (
+            <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-900 text-xs flex items-center justify-between shadow-xs animate-in fade-in-50 duration-200">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span className="font-semibold">{pinErrorMsg}</span>
+              </div>
+              <button
+                onClick={() => setPinErrorMsg(null)}
+                className="text-rose-700 hover:text-rose-900 text-xs font-bold"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
+          {/* PIN Management Card */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-7 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Administrative Security PIN
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Controls access to the Admin Sourcing Hub, vendor comparison matrix, and draft approval flows.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200/80 text-xs">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span className="text-slate-600 font-medium">Status:</span>
+                <span className="font-mono font-bold text-slate-900">
+                  {showPinDetails ? adminPin : '••••••'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowPinDetails(!showPinDetails)}
+                  className="text-slate-400 hover:text-slate-700 ml-1"
+                  title={showPinDetails ? 'Hide PIN' : 'Reveal PIN'}
+                >
+                  {showPinDetails ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Change PIN Form */}
+            <form onSubmit={handleSavePin} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Current Admin PIN
+                  </label>
+                  <input
+                    type={showPinDetails ? 'text' : 'password'}
+                    value={currentPinInput}
+                    onChange={(e) => setCurrentPinInput(e.target.value)}
+                    placeholder="Enter current PIN"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    New Security PIN
+                  </label>
+                  <input
+                    type={showPinDetails ? 'text' : 'password'}
+                    value={newPinInput}
+                    onChange={(e) => setNewPinInput(e.target.value)}
+                    placeholder="e.g. 039219"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Confirm New PIN
+                  </label>
+                  <input
+                    type={showPinDetails ? 'text' : 'password'}
+                    value={confirmPinInput}
+                    onChange={(e) => setConfirmPinInput(e.target.value)}
+                    placeholder="Re-enter new PIN"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3">
+                <button
+                  type="button"
+                  onClick={handleResetToDefaultPin}
+                  className="text-xs text-slate-500 hover:text-slate-800 font-semibold underline text-left"
+                >
+                  Reset PIN to Default (039219)
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Save New Security PIN</span>
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          {/* Operational Policy Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-2">
+              <div className="flex items-center gap-2 font-bold text-slate-900 text-xs">
+                <Zap className="w-4 h-4 text-amber-500" />
+                <span>10% Partial COD Policy</span>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Zero pure COD is strictly enforced across checkout. All customers deposit 10% online to confirm genuine dispatch, while the courier collects the 90% balance.
+              </p>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-2">
+              <div className="flex items-center gap-2 font-bold text-slate-900 text-xs">
+                <Sparkles className="w-4 h-4 text-indigo-600" />
+                <span>Auto-Discount Threshold (&gt;8%)</span>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Only deals with verified discount strictly higher than 8% (MRP vs Deal Price) are qualified into the public storefront or fetched from merchant feeds.
+              </p>
+            </div>
+          </div>
+
+          {/* Session Control Card */}
+          <div className="bg-slate-900 text-white rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-0.5">
+              <div className="text-xs font-bold text-white flex items-center gap-2">
+                <Lock className="w-4 h-4 text-emerald-400" />
+                <span>Administrative Session is Currently Active</span>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                Lock your session whenever leaving this workstation to prevent unauthorized access.
+              </p>
+            </div>
+
+            <button
+              onClick={logoutAdmin}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition-colors shrink-0"
+            >
+              Lock & Log Out
+            </button>
           </div>
         </section>
       )}

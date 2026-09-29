@@ -64,9 +64,9 @@ export const AdminLoginModal: React.FC = () => {
             </label>
             <input
               type="password"
-              maxLength={6}
+              maxLength={12}
               autoFocus
-              placeholder="••••"
+              placeholder="••••••"
               value={pin}
               onChange={(e) => {
                 setPin(e.target.value);
@@ -85,7 +85,7 @@ export const AdminLoginModal: React.FC = () => {
               </p>
             ) : (
               <p className="text-[11px] text-slate-400 text-center">
-                (Staff PIN: <strong className="text-slate-600 font-mono">2005</strong>)
+                Authorized staff and merchant access only.
               </p>
             )}
           </div>
