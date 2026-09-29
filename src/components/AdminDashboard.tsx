@@ -32,18 +32,10 @@ import {
   EyeOff,
   Lock
 } from 'lucide-react';
-
-const CATEGORY_DEFAULT_IMAGES: Record<string, string> = {
-  'Smartphones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
-  'iPhones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
-  'Laptops': '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
-  'Smartwatches': '/src/assets/images/deals_smartwatch_rugged_1790694792732.jpg',
-  'Smart TVs': '/src/assets/images/deals_smart_tv_display_1790689504174.jpg',
-  'TV': '/src/assets/images/deals_smart_tv_display_1790689504174.jpg',
-  'Audio': '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
-  'Headphones': '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
-  'Gaming': '/src/assets/images/deals_gaming_console_1790689489683.jpg',
-};
+import { 
+  CATEGORY_DEFAULT_IMAGES, 
+  normalizeCategory 
+} from '../data/mockDeals';
 
 export const AdminDashboard: React.FC = () => {
   const { 
@@ -155,11 +147,11 @@ export const AdminDashboard: React.FC = () => {
     setSelectedOrderForSourcing(null);
   };
 
-  // Requirement: Auto-Fetch Simulation Button
+  // Requirement: Auto-Fetch Simulation Button across all 6 major categories
   const handleFetchTrendingDeals = () => {
     setIsFetchingDeals(true);
     setFetchBanner({
-      message: 'Connecting to Amazon India & Flipkart feeds... Filtering deals with >8% discount...',
+      message: 'Connecting to Amazon & Flipkart feeds... Scanning Mobiles, Laptops, Audio, Smartwatches, Smart TVs & Gaming (>8% discount)...',
       type: 'info'
     });
 
@@ -168,7 +160,7 @@ export const AdminDashboard: React.FC = () => {
       setIsFetchingDeals(false);
       setActiveSection('DRAFTS'); // Switch directly to Draft Deals tab
       setFetchBanner({
-        message: `✅ Fetched ${res.fetchedCount} trending deals (>8% discount) into Draft Deals Queue! Review margins & approve below.`,
+        message: `✅ Successfully fetched ${res.fetchedCount} trending deals across all 6 categories (Mobiles, Laptops, Audio, Watches, TVs, Gaming) with >8% discount!`,
         type: 'success'
       });
       setTimeout(() => setFetchBanner(null), 6000);
@@ -441,7 +433,7 @@ export const AdminDashboard: React.FC = () => {
                             alt={deal.title}
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              const fallback = CATEGORY_DEFAULT_IMAGES[deal.category] || '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg';
+                              const fallback = CATEGORY_DEFAULT_IMAGES[normalizeCategory(deal.category)] || CATEGORY_DEFAULT_IMAGES['Mobiles & iPhones'];
                               if ((e.currentTarget as HTMLImageElement).src !== fallback) {
                                 (e.currentTarget as HTMLImageElement).src = fallback;
                               }

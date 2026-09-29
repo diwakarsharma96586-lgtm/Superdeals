@@ -1,32 +1,29 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { X, PlusCircle, Tag, Layers, Check } from 'lucide-react';
+import { X, PlusCircle } from 'lucide-react';
+import { 
+  MAJOR_CATEGORIES, 
+  CATEGORY_DEFAULT_IMAGES, 
+  normalizeCategory 
+} from '../data/mockDeals';
 
 export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const { addNewDeal } = useApp();
 
   const [title, setTitle] = useState('');
   const [brand, setBrand] = useState('');
-  const [category, setCategory] = useState('Smartphones');
+  const [category, setCategory] = useState<string>('Mobiles & iPhones');
   const [mrp, setMrp] = useState<number>(50000);
-  const [dealPrice, setDealPrice] = useState<number>(44990);
+  const [dealPrice, setDealPrice] = useState<number>(42990); // ~14% discount
   const [description, setDescription] = useState('');
-  const [image, setImage] = useState('/src/assets/images/deals_smartphone_flagship_1790689474273.jpg');
+  const [image, setImage] = useState(CATEGORY_DEFAULT_IMAGES['Mobiles & iPhones']);
   const [saveAsDraft, setSaveAsDraft] = useState(true);
-
-  const CATEGORY_IMAGES: Record<string, string> = {
-    'Smartphones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
-    'Laptops': '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
-    'Smartwatches': '/src/assets/images/deals_smartwatch_rugged_1790694792732.jpg',
-    'Smart TVs': '/src/assets/images/deals_smart_tv_display_1790689504174.jpg',
-    'Audio': '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
-    'Gaming': '/src/assets/images/deals_gaming_console_1790689489683.jpg',
-  };
 
   const handleCategoryChange = (newCat: string) => {
     setCategory(newCat);
-    if (CATEGORY_IMAGES[newCat]) {
-      setImage(CATEGORY_IMAGES[newCat]);
+    const resolvedImg = CATEGORY_DEFAULT_IMAGES[newCat] || CATEGORY_DEFAULT_IMAGES[normalizeCategory(newCat)];
+    if (resolvedImg) {
+      setImage(resolvedImg);
     }
   };
 
@@ -41,15 +38,17 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
     if (!title || !dealPrice) return;
 
     const baseEmi = Math.round(dealPrice / 6);
+    const assignedCategory = category || 'Mobiles & iPhones';
+    const assignedImage = image || CATEGORY_DEFAULT_IMAGES[assignedCategory] || CATEGORY_DEFAULT_IMAGES['Mobiles & iPhones'];
 
     addNewDeal({
       title,
       brand: brand || 'Brand',
-      category,
+      category: assignedCategory,
       mrp: Number(mrp),
       dealPrice: Number(dealPrice),
       description: description || 'High demand product with genuine warranty and fast dispatch.',
-      image: image || CATEGORY_IMAGES[category] || '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
+      image: assignedImage,
       specs: ['100% Genuine Authorized Stock', '1 Year Brand Warranty', 'Pan-India Fast Dispatch'],
       inStock: true,
       highlightBadge: 'Manual Listing',
@@ -68,6 +67,9 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
 
     onClose();
   };
+
+  // Filter out 'All'
+  const selectableCategories = MAJOR_CATEGORIES.filter((c) => c !== 'All');
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/70 backdrop-blur-sm overflow-y-auto">
@@ -102,25 +104,24 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
                 type="text"
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
-                placeholder="e.g. Apple / Sony / ASUS"
+                placeholder="e.g. Apple / Sony / Samsung"
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Category</label>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Major Category</label>
               <select
                 value={category}
                 onChange={(e) => handleCategoryChange(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 font-medium"
               >
-                <option value="Smartphones">Smartphones</option>
-                <option value="Laptops">Laptops</option>
-                <option value="Smartwatches">Smartwatches</option>
-                <option value="Smart TVs">Smart TVs</option>
-                <option value="Audio">Audio</option>
-                <option value="Gaming">Gaming</option>
+                {selectableCategories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -138,7 +139,7 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Our Deal Price (₹)</label>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Our Deal Price (₹) (&gt;8% Discount)</label>
               <input
                 type="number"
                 value={dealPrice}

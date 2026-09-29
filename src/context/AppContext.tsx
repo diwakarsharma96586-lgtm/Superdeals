@@ -4,7 +4,9 @@ import {
   INITIAL_DEALS, 
   INITIAL_DRAFT_DEALS, 
   INITIAL_SAMPLE_ORDERS, 
-  SYNCABLE_TRENDING_DEALS 
+  MULTI_CATEGORY_TRENDING_POOL,
+  MAJOR_CATEGORIES,
+  CATEGORY_DEFAULT_IMAGES
 } from '../data/mockDeals';
 
 interface AppContextType {
@@ -29,7 +31,8 @@ interface AppContextType {
   logoutAdmin: () => void;
   // Actions
   addNewDeal: (deal: Omit<DealItem, 'id' | 'rating' | 'reviewCount'>, asDraft?: boolean) => void;
-  fetchTrendingDraftDeals: () => { fetchedCount: number; platformBreakdown: string };
+  fetchTrendingDraftDeals: () => { fetchedCount: number; platformBreakdown: string; categoriesList: string[] };
+  refreshLiveDeals: () => { addedCount: number; categoriesCount: number };
   approveAndPublishDeal: (dealId: string) => void;
   rejectDraftDeal: (dealId: string) => void;
   approveAllDraftDeals: () => number;
@@ -218,52 +221,102 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Fetch live trending deals from Amazon/Flipkart with >8% discount into Draft queue
+  // Multi-Category Fetching across ALL 6 major categories with randomized variety & >8% discount filter
   const fetchTrendingDraftDeals = () => {
-    // Only items with discount strictly > 8%
-    const qualifiedItems = SYNCABLE_TRENDING_DEALS.filter((d) => {
-      const discount = ((d.mrp - d.dealPrice) / d.mrp) * 100;
-      return discount > 8;
-    });
+    const categoriesToFetch = [
+      'Mobiles & iPhones',
+      'Laptops & Computers',
+      'Audio & Headphones',
+      'Smartwatches & Wearables',
+      'Smart TVs & Home Electronics',
+      'Gaming Consoles & Accessories',
+    ];
 
-    let count = 0;
     const nowIso = new Date().toISOString();
+    const newlyFetchedBatch: DealItem[] = [];
 
-    setDraftDeals((currentDrafts) => {
-      const existingDraftIds = new Set(currentDrafts.map((d) => d.id));
-      const existingLiveIds = new Set(deals.map((d) => d.id));
-      const newlyFetched: DealItem[] = [];
+    // For EACH of the 6 categories, pick 1 random item from its pool to ensure all categories are represented
+    categoriesToFetch.forEach((category) => {
+      const categoryPool = MULTI_CATEGORY_TRENDING_POOL[category] || [];
+      if (categoryPool.length === 0) return;
 
-      for (const item of qualifiedItems) {
-        if (!existingDraftIds.has(item.id) && !existingLiveIds.has(item.id)) {
-          newlyFetched.push({
-            ...item,
-            isDraft: true,
-            fetchedAt: nowIso,
-          });
-          count++;
-        }
-      }
+      // Pick random item from this category
+      const randomIndex = Math.floor(Math.random() * categoryPool.length);
+      const chosenItem = categoryPool[randomIndex];
 
-      if (newlyFetched.length === 0) {
-        // If already in queue, simulate new trending batch clones with timestamp
-        const clones = qualifiedItems.map((d) => ({
-          ...d,
-          id: `fetch-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
-          title: `Trending: ${d.title}`,
-          isDraft: true,
-          fetchedAt: nowIso,
-        }));
-        count = clones.length;
-        return [...clones, ...currentDrafts];
-      }
+      // Verify discount > 8%
+      const discountPct = ((chosenItem.mrp - chosenItem.dealPrice) / chosenItem.mrp) * 100;
+      const validPrice = discountPct > 8 ? chosenItem.dealPrice : Math.round(chosenItem.mrp * 0.86);
 
-      return [...newlyFetched, ...currentDrafts];
+      // Verify category-specific high-res image
+      const validImage = chosenItem.image || CATEGORY_DEFAULT_IMAGES[category] || '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg';
+
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      newlyFetchedBatch.push({
+        ...chosenItem,
+        id: `draft-${Date.now()}-${randomSuffix}`,
+        category,
+        image: validImage,
+        dealPrice: validPrice,
+        isDraft: true,
+        fetchedAt: nowIso,
+        sourceFeed: Math.random() > 0.5 ? 'Amazon' : 'Flipkart',
+      });
     });
+
+    // Shuffle the items so categories are intermixed with randomized variety
+    const finalShuffled = [...newlyFetchedBatch].sort(() => 0.5 - Math.random());
+
+    setDraftDeals((currentDrafts) => [...finalShuffled, ...currentDrafts]);
 
     return { 
-      fetchedCount: count, 
-      platformBreakdown: 'Amazon India & Flipkart High-Discount Feeds' 
+      fetchedCount: finalShuffled.length, 
+      platformBreakdown: 'Amazon India & Flipkart live feeds',
+      categoriesList: categoriesToFetch
+    };
+  };
+
+  // Instant storefront deal refresh with multi-category randomized variety
+  const refreshLiveDeals = () => {
+    const categoriesToRefresh = [
+      'Mobiles & iPhones',
+      'Laptops & Computers',
+      'Audio & Headphones',
+      'Smartwatches & Wearables',
+      'Smart TVs & Home Electronics',
+      'Gaming Consoles & Accessories',
+    ];
+
+    const freshLiveItems: DealItem[] = [];
+    const nowIso = new Date().toISOString();
+
+    categoriesToRefresh.forEach((category) => {
+      const categoryPool = MULTI_CATEGORY_TRENDING_POOL[category] || [];
+      if (categoryPool.length === 0) return;
+
+      const randomItem = categoryPool[Math.floor(Math.random() * categoryPool.length)];
+      const discountPct = ((randomItem.mrp - randomItem.dealPrice) / randomItem.mrp) * 100;
+      const validPrice = discountPct > 8 ? randomItem.dealPrice : Math.round(randomItem.mrp * 0.86);
+      const validImage = randomItem.image || CATEGORY_DEFAULT_IMAGES[category] || '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg';
+
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      freshLiveItems.push({
+        ...randomItem,
+        id: `live-${Date.now()}-${randomSuffix}`,
+        category,
+        image: validImage,
+        dealPrice: validPrice,
+        isDraft: false,
+        fetchedAt: nowIso,
+        sourceFeed: Math.random() > 0.5 ? 'Amazon' : 'Flipkart',
+      });
+    });
+
+    setDeals((prev) => [...freshLiveItems, ...prev]);
+
+    return {
+      addedCount: freshLiveItems.length,
+      categoriesCount: categoriesToRefresh.length
     };
   };
 
@@ -477,6 +530,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         logoutAdmin,
         addNewDeal,
         fetchTrendingDraftDeals,
+        refreshLiveDeals,
         approveAndPublishDeal,
         rejectDraftDeal,
         approveAllDraftDeals,
