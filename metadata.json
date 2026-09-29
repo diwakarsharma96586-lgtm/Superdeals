@@ -1,0 +1,6 @@
+{
+  "name": "Deals & EMI Aggregator App",
+  "description": "Deals and EMI aggregation platform with 10% Partial COD security deposit, instant EMI, zero pure COD fraud protection, and admin manual vendor fulfillment.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
