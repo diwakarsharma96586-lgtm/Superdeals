@@ -75,7 +75,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [deals, setDeals] = useState<DealItem[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_DEALS);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Merge to preserve any previously approved or added deals while guaranteeing the full expanded initial catalog
+          const savedIds = new Set(parsed.map((d: DealItem) => d.id));
+          const missingInitial = INITIAL_DEALS.filter((d) => !savedIds.has(d.id));
+          return [...parsed, ...missingInitial];
+        }
+      }
     } catch {
       // fallback
     }

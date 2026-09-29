@@ -17,6 +17,8 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
   const CATEGORY_IMAGES: Record<string, string> = {
     'Smartphones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
     'Laptops': '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
+    'Smartwatches': '/src/assets/images/deals_smartwatch_rugged_1790694792732.jpg',
+    'Smart TVs': '/src/assets/images/deals_smart_tv_display_1790689504174.jpg',
     'Audio': '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
     'Gaming': '/src/assets/images/deals_gaming_console_1790689489683.jpg',
   };
@@ -115,6 +117,8 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
               >
                 <option value="Smartphones">Smartphones</option>
                 <option value="Laptops">Laptops</option>
+                <option value="Smartwatches">Smartwatches</option>
+                <option value="Smart TVs">Smart TVs</option>
                 <option value="Audio">Audio</option>
                 <option value="Gaming">Gaming</option>
               </select>

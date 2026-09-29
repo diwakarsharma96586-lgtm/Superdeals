@@ -8,14 +8,18 @@ export const DealsCatalog: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Explicitly requested categories
-  const categories = ['All', 'Smartphones', 'Laptops', 'Audio', 'Gaming'];
+  // Explicitly requested diverse categories
+  const categories = ['All', 'Smartphones', 'Laptops', 'Smartwatches', 'Smart TVs', 'Audio', 'Gaming'];
 
   const CATEGORY_DEFAULT_IMAGES: Record<string, string> = {
     'Smartphones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
     'iPhones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
     'Laptops': '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
+    'Smartwatches': '/src/assets/images/deals_smartwatch_rugged_1790694792732.jpg',
+    'Smart TVs': '/src/assets/images/deals_smart_tv_display_1790689504174.jpg',
+    'TV': '/src/assets/images/deals_smart_tv_display_1790689504174.jpg',
     'Audio': '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
+    'Headphones': '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
     'Gaming': '/src/assets/images/deals_gaming_console_1790689489683.jpg',
   };
 
@@ -24,7 +28,13 @@ export const DealsCatalog: React.FC = () => {
     const discountPercentage = ((deal.mrp - deal.dealPrice) / deal.mrp) * 100;
     if (discountPercentage <= 8) return false;
 
-    const matchesCat = selectedCategory === 'All' || deal.category === selectedCategory;
+    const matchesCat = 
+      selectedCategory === 'All' || 
+      deal.category === selectedCategory ||
+      (selectedCategory === 'Smartphones' && deal.category === 'iPhones') ||
+      (selectedCategory === 'Smart TVs' && deal.category === 'TV') ||
+      (selectedCategory === 'Audio' && deal.category === 'Headphones');
+
     const matchesSearch =
       deal.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       deal.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||

@@ -26,14 +26,14 @@ export const CheckoutModal: React.FC = () => {
 
   const deal = selectedDealForCheckout;
 
-  // Form State
-  const [fullName, setFullName] = useState('Ankit Sharma');
-  const [phone, setPhone] = useState('9876543210');
-  const [email, setEmail] = useState('ankit.sharma@example.com');
-  const [addressLine, setAddressLine] = useState('Flat 503, Green Heights, 100ft Road, Indiranagar');
-  const [city, setCity] = useState('Bengaluru');
-  const [state, setState] = useState('Karnataka');
-  const [pincode, setPincode] = useState('560038');
+  // Form State - Empty placeholders for real delivery details
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [addressLine, setAddressLine] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [pincode, setPincode] = useState('');
 
   // Payment Selection
   const [paymentType, setPaymentType] = useState<PaymentType>('PARTIAL_COD_10');
@@ -253,63 +253,102 @@ export const CheckoutModal: React.FC = () => {
 
               {/* Delivery Details Form */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                  1. Shipping & Delivery Address
-                </h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                    1. Shipping & Delivery Address
+                  </h4>
+                  <span className="text-[11px] text-slate-400">All fields required for courier dispatch</span>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-600 mb-1">
-                      Full Name
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      Full Name *
                     </label>
                     <input
                       type="text"
+                      placeholder="e.g. Rahul Sharma"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs placeholder:text-slate-400 focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                      required
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-600 mb-1">
-                      Mobile Number (For Courier OTP & UPI)
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      Mobile Number (For Courier OTP & Tracking) *
                     </label>
                     <input
                       type="tel"
+                      maxLength={10}
+                      placeholder="e.g. 9876543210 (10 digits)"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs placeholder:text-slate-400 focus:ring-2 focus:ring-slate-900 focus:outline-none font-mono"
+                      required
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="block text-[11px] font-medium text-slate-600 mb-1">
-                      Complete House / Street Address
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      Complete House / Street Address *
                     </label>
                     <input
                       type="text"
+                      placeholder="Flat/House No., Building, Street, Area/Landmark"
                       value={addressLine}
                       onChange={(e) => setAddressLine(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs placeholder:text-slate-400 focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                      required
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-600 mb-1">
-                      City
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      City *
                     </label>
                     <input
                       type="text"
+                      placeholder="e.g. Bengaluru / Delhi / Mumbai"
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs placeholder:text-slate-400 focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                      required
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-600 mb-1">
-                      PIN Code
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      PIN Code *
                     </label>
                     <input
                       type="text"
+                      maxLength={6}
+                      placeholder="e.g. 560038 (6 digits)"
                       value={pincode}
-                      onChange={(e) => setPincode(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                      onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs placeholder:text-slate-400 focus:ring-2 focus:ring-slate-900 focus:outline-none font-mono"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      State
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Karnataka / Maharashtra / Delhi"
+                      value={state}
+                      onChange={(e) => setState(e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs placeholder:text-slate-400 focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      Email Address (For E-Receipt)
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="e.g. customer@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs placeholder:text-slate-400 focus:ring-2 focus:ring-slate-900 focus:outline-none"
                     />
                   </div>
                 </div>
