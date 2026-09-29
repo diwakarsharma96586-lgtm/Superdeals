@@ -17,7 +17,9 @@ import {
   Building,
   User,
   MapPin,
-  Phone
+  Phone,
+  RefreshCw,
+  Sparkles
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
@@ -26,11 +28,16 @@ export const AdminDashboard: React.FC = () => {
     fulfillOrderWithVendor, 
     updateOrderStatus, 
     setCurrentView,
-    setActiveTrackingOrderId
+    setActiveTrackingOrderId,
+    autoSyncTrendingDeals
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<'ALL' | 'NEW' | 'DISPATCHED' | 'DELIVERED'>('ALL');
   const [selectedOrderForSourcing, setSelectedOrderForSourcing] = useState<Order | null>(null);
+
+  // Auto-sync state
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
 
   // Sourcing form state
   const [selectedVendor, setSelectedVendor] = useState<'Wholesaler' | 'Amazon' | 'Flipkart' | string>('Wholesaler');
@@ -107,6 +114,19 @@ export const AdminDashboard: React.FC = () => {
     setSelectedOrderForSourcing(null);
   };
 
+  const handleAutoSync = () => {
+    setIsSyncing(true);
+    setSyncFeedback('Fetching Amazon & Flipkart feeds for verified deals with >8% discount...');
+    setTimeout(() => {
+      const res = autoSyncTrendingDeals();
+      setIsSyncing(false);
+      setSyncFeedback(
+        `✅ Successfully synced ${res.addedCount} high-discount deals across Smartphones, Laptops, Audio & Gaming (>8% Off)!`
+      );
+      setTimeout(() => setSyncFeedback(null), 5000);
+    }, 800);
+  };
+
   return (
     <div className="space-y-8 pb-16">
       {/* Top Banner / Heading */}
@@ -123,7 +143,17 @@ export const AdminDashboard: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          {/* Mock Auto-Sync Deals Button as requested */}
+          <button
+            onClick={handleAutoSync}
+            disabled={isSyncing}
+            className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1.5"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-indigo-600 ${isSyncing ? 'animate-spin' : ''}`} />
+            <span>{isSyncing ? 'Syncing Feeds...' : 'Auto-Sync Deals (>8% Off)'}</span>
+          </button>
+
           <button
             onClick={() => setCurrentView('marketplace')}
             className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors"
@@ -132,6 +162,22 @@ export const AdminDashboard: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Auto-Sync Feedback Banner */}
+      {syncFeedback && (
+        <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl text-indigo-900 text-xs flex items-center justify-between shadow-xs animate-in fade-in-50 duration-200">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-indigo-600 shrink-0" />
+            <span className="font-semibold">{syncFeedback}</span>
+          </div>
+          <button
+            onClick={() => setCurrentView('marketplace')}
+            className="text-xs font-bold text-indigo-700 underline hover:text-indigo-900 ml-4 shrink-0"
+          >
+            View in Deals Hub →
+          </button>
+        </div>
+      )}
 
       {/* Step 3 Requirement: High-Priority Alert on Admin Dashboard */}
       {newOrders.length > 0 && (

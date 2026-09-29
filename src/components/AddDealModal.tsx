@@ -7,17 +7,17 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
 
   const [title, setTitle] = useState('');
   const [brand, setBrand] = useState('');
-  const [category, setCategory] = useState('iPhones');
+  const [category, setCategory] = useState('Smartphones');
   const [mrp, setMrp] = useState<number>(50000);
   const [dealPrice, setDealPrice] = useState<number>(44990);
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('/src/assets/images/deals_smartphone_flagship_1790689474273.jpg');
 
   const CATEGORY_IMAGES: Record<string, string> = {
-    'iPhones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
-    'Gaming Consoles': '/src/assets/images/deals_gaming_console_1790689489683.jpg',
-    'Smartwatches': '/src/assets/images/deals_smartwatch_rugged_1790694792732.jpg',
+    'Smartphones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
     'Laptops': '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
+    'Audio': '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
+    'Gaming': '/src/assets/images/deals_gaming_console_1790689489683.jpg',
   };
 
   const handleCategoryChange = (newCat: string) => {
@@ -110,10 +110,10 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
                 onChange={(e) => handleCategoryChange(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900"
               >
-                <option value="iPhones">iPhones</option>
-                <option value="Gaming Consoles">Gaming Consoles</option>
-                <option value="Smartwatches">Smartwatches</option>
+                <option value="Smartphones">Smartphones</option>
                 <option value="Laptops">Laptops</option>
+                <option value="Audio">Audio</option>
+                <option value="Gaming">Gaming</option>
               </select>
             </div>
           </div>

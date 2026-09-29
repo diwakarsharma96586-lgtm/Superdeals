@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { DealItem, Order, OrderStatus } from '../types';
-import { INITIAL_DEALS, INITIAL_SAMPLE_ORDERS } from '../data/mockDeals';
+import { INITIAL_DEALS, INITIAL_SAMPLE_ORDERS, SYNCABLE_TRENDING_DEALS } from '../data/mockDeals';
 
 interface AppContextType {
   deals: DealItem[];
@@ -21,6 +21,7 @@ interface AppContextType {
   logoutAdmin: () => void;
   // Actions
   addNewDeal: (deal: Omit<DealItem, 'id' | 'rating' | 'reviewCount'>) => void;
+  autoSyncTrendingDeals: () => { addedCount: number; totalQualified: number };
   placeOrder: (
     newOrderData: Omit<Order, 'id' | 'createdAt' | 'status' | 'notifications'>
   ) => Order;
@@ -43,8 +44,8 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const STORAGE_KEY_DEALS = 'deals_aggregator_items_v2';
-const STORAGE_KEY_ORDERS = 'deals_aggregator_orders_v2';
+const STORAGE_KEY_DEALS = 'deals_aggregator_items_v3';
+const STORAGE_KEY_ORDERS = 'deals_aggregator_orders_v3';
 const ADMIN_SECRET_PIN = '2026';
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -143,6 +144,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       reviewCount: 1,
     };
     setDeals((prev) => [newDeal, ...prev]);
+  };
+
+  // Auto-sync deals from Amazon/Flipkart feeds with >8% discount
+  const autoSyncTrendingDeals = () => {
+    // Filter only those with discount > 8%
+    const qualifiedSyncDeals = SYNCABLE_TRENDING_DEALS.filter((d) => {
+      const discount = ((d.mrp - d.dealPrice) / d.mrp) * 100;
+      return discount > 8;
+    });
+
+    let addedCount = 0;
+    setDeals((currentDeals) => {
+      const existingIds = new Set(currentDeals.map((d) => d.id));
+      const newlyAdded: DealItem[] = [];
+
+      for (const item of qualifiedSyncDeals) {
+        if (!existingIds.has(item.id)) {
+          newlyAdded.push(item);
+          addedCount++;
+        }
+      }
+
+      if (newlyAdded.length === 0) {
+        // If all are already synced, generate fresh batch with dynamic timestamp IDs
+        const freshClones = qualifiedSyncDeals.map((d) => ({
+          ...d,
+          id: `sync-deal-${Date.now()}-${d.category.toLowerCase().slice(0, 4)}`,
+          title: `Trending: ${d.title}`,
+        }));
+        addedCount = freshClones.length;
+        return [...freshClones, ...currentDeals];
+      }
+
+      return [...newlyAdded, ...currentDeals];
+    });
+
+    return { addedCount, totalQualified: qualifiedSyncDeals.length };
   };
 
   const placeOrder = (
@@ -307,6 +345,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         unlockAdmin,
         logoutAdmin,
         addNewDeal,
+        autoSyncTrendingDeals,
         placeOrder,
         fulfillOrderWithVendor,
         updateOrderStatus,

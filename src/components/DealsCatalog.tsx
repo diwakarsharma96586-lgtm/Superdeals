@@ -1,23 +1,28 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { DealItem } from '../types';
-import { ShieldAlert, ArrowRight, Zap, CheckCircle2, Calculator } from 'lucide-react';
+import { ShieldAlert, ArrowRight, Zap, CheckCircle2, Calculator, Percent, Sparkles } from 'lucide-react';
 
 export const DealsCatalog: React.FC = () => {
   const { deals, setSelectedDealForCheckout, setSelectedDealForEmi } = useApp();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  const categories = ['All', 'iPhones', 'Gaming Consoles', 'Smartwatches', 'Laptops'];
+  // Explicitly requested categories
+  const categories = ['All', 'Smartphones', 'Laptops', 'Audio', 'Gaming'];
 
   const CATEGORY_DEFAULT_IMAGES: Record<string, string> = {
-    'iPhones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
-    'Gaming Consoles': '/src/assets/images/deals_gaming_console_1790689489683.jpg',
-    'Smartwatches': '/src/assets/images/deals_smartwatch_rugged_1790694792732.jpg',
+    'Smartphones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
     'Laptops': '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
+    'Audio': '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
+    'Gaming': '/src/assets/images/deals_gaming_console_1790689489683.jpg',
   };
 
+  // Rule: Only products with greater than 8% discount (MRP vs Deal Price) are shown
   const filteredDeals = deals.filter((deal) => {
+    const discountPercentage = ((deal.mrp - deal.dealPrice) / deal.mrp) * 100;
+    if (discountPercentage <= 8) return false;
+
     const matchesCat = selectedCategory === 'All' || deal.category === selectedCategory;
     const matchesSearch =
       deal.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -27,18 +32,19 @@ export const DealsCatalog: React.FC = () => {
   });
 
   return (
-    <div className="space-y-12 pb-16">
+    <div className="space-y-10 pb-16">
       {/* Hero Section */}
       <section className="bg-slate-900 text-white rounded-2xl p-6 sm:p-10 relative overflow-hidden shadow-sm">
         <div className="max-w-2xl relative z-10 space-y-4">
-          <div className="text-xs uppercase tracking-widest text-indigo-400 font-semibold">
-            Aggregated Deals & Smart Security Model
+          <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-indigo-400 font-semibold bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-400/20">
+            <Percent className="w-3.5 h-3.5 text-indigo-400" />
+            <span>Curated High-Discount Filter (&gt;8% Off Guaranteed)</span>
           </div>
           <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
             Best Market Deals with <span className="text-indigo-400">10% Partial COD</span> or Instant 0% EMI.
           </h1>
           <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-            Reserve any high-ticket gadget with just a 10% advance security deposit. Pay the remaining 90% balance to the courier delivery executive via Cash or UPI upon physical inspection.
+            Reserve any high-ticket gadget with just a 10% advance security deposit. Pay the remaining 90% balance to the courier delivery executive via Cash or UPI upon physical delivery.
           </p>
 
           <div className="pt-2 flex flex-wrap items-center gap-6 text-xs text-slate-300">
@@ -52,7 +58,7 @@ export const DealsCatalog: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>0% Pure COD Fraud Shield</span>
+              <span>Only Verified Discounts &gt;8%</span>
             </div>
           </div>
         </div>
@@ -78,38 +84,48 @@ export const DealsCatalog: React.FC = () => {
         </div>
       </section>
 
-      {/* Filter and Search Bar */}
-      <section className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-1.5 p-1 bg-slate-200/70 rounded-xl overflow-x-auto">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
-                selectedCategory === cat
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+      {/* Filter and Search Bar with Category selection */}
+      <section className="space-y-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-1.5 p-1 bg-slate-200/70 rounded-xl overflow-x-auto">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
+                  selectedCategory === cat
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <input
+              type="text"
+              placeholder="Search smartphones, laptops, audio..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full sm:w-72 px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent text-slate-900 placeholder:text-slate-400 shadow-2xs"
+            />
+          </div>
         </div>
 
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search phones, gaming, laptops..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full sm:w-72 px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent text-slate-900 placeholder:text-slate-400"
-          />
+        {/* Live Filter Metric Indicator */}
+        <div className="flex items-center justify-between text-xs text-slate-500 px-1">
+          <div className="flex items-center gap-1.5 font-medium">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+            <span>Showing {filteredDeals.length} curated product(s) qualifying for &gt;8% deal discount</span>
+          </div>
         </div>
       </section>
 
       {/* Featured Deals Grid */}
       <section>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredDeals.map((deal) => {
             const deposit10 = Math.round(deal.dealPrice * 0.1);
             const remaining90 = deal.dealPrice - deposit10;
@@ -141,10 +157,15 @@ export const DealsCatalog: React.FC = () => {
                       {deal.highlightBadge}
                     </div>
                   )}
+
+                  {/* Guaranteed discount tag */}
+                  <div className="absolute top-3 right-3 bg-emerald-600 text-white text-[11px] font-bold px-2 py-0.5 rounded-md shadow-xs">
+                    {savingsPercent}% OFF
+                  </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4">
                   <div className="space-y-2">
                     {/* Unboxed clean metadata */}
                     <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
@@ -155,28 +176,28 @@ export const DealsCatalog: React.FC = () => {
                       <span className="text-emerald-600 font-semibold">In Stock</span>
                     </div>
 
-                    <h3 className="text-base font-bold text-slate-900 line-clamp-2 leading-snug">
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900 line-clamp-2 leading-snug">
                       {deal.title}
                     </h3>
 
                     {/* Price Block */}
                     <div className="pt-1 flex items-baseline gap-2.5">
-                      <span className="text-xl font-extrabold text-slate-900 tabular-nums">
+                      <span className="text-lg sm:text-xl font-extrabold text-slate-900 tabular-nums">
                         ₹{deal.dealPrice.toLocaleString('en-IN')}
                       </span>
                       <span className="text-xs text-slate-400 line-through tabular-nums">
                         ₹{deal.mrp.toLocaleString('en-IN')}
                       </span>
                       <span className="text-xs font-semibold text-emerald-600">
-                        {savingsPercent}% OFF
+                        Save ₹{savings.toLocaleString('en-IN')}
                       </span>
                     </div>
                   </div>
 
                   {/* Partial COD & EMI Breakdown Box */}
-                  <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-100 space-y-2.5 text-xs">
+                  <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-2 text-xs">
                     {/* Partial COD breakdown */}
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-200/60">
+                    <div className="flex items-center justify-between pb-1.5 border-b border-slate-200/60">
                       <span className="text-slate-600 font-medium flex items-center gap-1">
                         <Zap className="w-3.5 h-3.5 text-amber-500" />
                         10% Partial COD Booking:
@@ -207,10 +228,10 @@ export const DealsCatalog: React.FC = () => {
                   </div>
 
                   {/* Action buttons */}
-                  <div className="pt-2 grid grid-cols-2 gap-2">
+                  <div className="pt-1 grid grid-cols-2 gap-2">
                     <button
                       onClick={() => setSelectedDealForEmi(deal)}
-                      className="w-full py-2.5 px-3 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors flex items-center justify-center gap-1.5"
+                      className="w-full py-2.5 px-3 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors flex items-center justify-center gap-1"
                     >
                       <Calculator className="w-3.5 h-3.5" />
                       <span>EMI Plans</span>
