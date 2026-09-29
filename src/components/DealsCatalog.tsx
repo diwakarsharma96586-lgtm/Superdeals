@@ -8,7 +8,14 @@ export const DealsCatalog: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  const categories = ['All', 'Smartphones', 'Gaming', 'Television', 'Laptops'];
+  const categories = ['All', 'iPhones', 'Gaming Consoles', 'Smartwatches', 'Laptops'];
+
+  const CATEGORY_DEFAULT_IMAGES: Record<string, string> = {
+    'iPhones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
+    'Gaming Consoles': '/src/assets/images/deals_gaming_console_1790689489683.jpg',
+    'Smartwatches': '/src/assets/images/deals_smartwatch_rugged_1790694792732.jpg',
+    'Laptops': '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
+  };
 
   const filteredDeals = deals.filter((deal) => {
     const matchesCat = selectedCategory === 'All' || deal.category === selectedCategory;
@@ -123,9 +130,10 @@ export const DealsCatalog: React.FC = () => {
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                     onError={(e) => {
-                      // Fallback container
-                      (e.currentTarget as HTMLImageElement).src =
-                        'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&auto=format&fit=crop&q=80';
+                      const fallback = CATEGORY_DEFAULT_IMAGES[deal.category] || '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg';
+                      if ((e.currentTarget as HTMLImageElement).src !== fallback) {
+                        (e.currentTarget as HTMLImageElement).src = fallback;
+                      }
                     }}
                   />
                   {deal.highlightBadge && (

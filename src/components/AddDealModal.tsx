@@ -7,11 +7,25 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
 
   const [title, setTitle] = useState('');
   const [brand, setBrand] = useState('');
-  const [category, setCategory] = useState('Smartphones');
+  const [category, setCategory] = useState('iPhones');
   const [mrp, setMrp] = useState<number>(50000);
   const [dealPrice, setDealPrice] = useState<number>(44990);
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('/src/assets/images/deals_smartphone_flagship_1790689474273.jpg');
+
+  const CATEGORY_IMAGES: Record<string, string> = {
+    'iPhones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
+    'Gaming Consoles': '/src/assets/images/deals_gaming_console_1790689489683.jpg',
+    'Smartwatches': '/src/assets/images/deals_smartwatch_rugged_1790694792732.jpg',
+    'Laptops': '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
+  };
+
+  const handleCategoryChange = (newCat: string) => {
+    setCategory(newCat);
+    if (CATEGORY_IMAGES[newCat]) {
+      setImage(CATEGORY_IMAGES[newCat]);
+    }
+  };
   const [amazonCost, setAmazonCost] = useState<number>(41990);
   const [flipkartCost, setFlipkartCost] = useState<number>(42490);
   const [wholesalerCost, setWholesalerCost] = useState<number>(39900);
@@ -93,14 +107,13 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
               <label className="block text-[11px] font-semibold text-slate-700 mb-1">Category</label>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(e) => handleCategoryChange(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900"
               >
-                <option value="Smartphones">Smartphones</option>
-                <option value="Gaming">Gaming</option>
-                <option value="Television">Television</option>
+                <option value="iPhones">iPhones</option>
+                <option value="Gaming Consoles">Gaming Consoles</option>
+                <option value="Smartwatches">Smartwatches</option>
                 <option value="Laptops">Laptops</option>
-                <option value="Audio & Wearables">Audio & Wearables</option>
               </select>
             </div>
           </div>

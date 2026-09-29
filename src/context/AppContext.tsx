@@ -13,6 +13,13 @@ interface AppContextType {
   setSelectedDealForEmi: (deal: DealItem | null) => void;
   activeTrackingOrderId: string | null;
   setActiveTrackingOrderId: (id: string | null) => void;
+  // Admin authentication & secret access
+  isAdminAuthenticated: boolean;
+  isAdminLoginModalOpen: boolean;
+  setIsAdminLoginModalOpen: (open: boolean) => void;
+  unlockAdmin: (pin: string) => boolean;
+  logoutAdmin: () => void;
+  // Actions
   addNewDeal: (deal: Omit<DealItem, 'id' | 'rating' | 'reviewCount'>) => void;
   placeOrder: (
     newOrderData: Omit<Order, 'id' | 'createdAt' | 'status' | 'notifications'>
@@ -36,8 +43,9 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const STORAGE_KEY_DEALS = 'deals_aggregator_items_v1';
-const STORAGE_KEY_ORDERS = 'deals_aggregator_orders_v1';
+const STORAGE_KEY_DEALS = 'deals_aggregator_items_v2';
+const STORAGE_KEY_ORDERS = 'deals_aggregator_orders_v2';
+const ADMIN_SECRET_PIN = '2026';
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [deals, setDeals] = useState<DealItem[]>(() => {
@@ -60,10 +68,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return INITIAL_SAMPLE_ORDERS;
   });
 
-  const [currentView, setCurrentView] = useState<'marketplace' | 'admin' | 'tracking'>('marketplace');
+  const [currentView, setViewInternal] = useState<'marketplace' | 'admin' | 'tracking'>('marketplace');
   const [selectedDealForCheckout, setSelectedDealForCheckout] = useState<DealItem | null>(null);
   const [selectedDealForEmi, setSelectedDealForEmi] = useState<DealItem | null>(null);
   const [activeTrackingOrderId, setActiveTrackingOrderId] = useState<string | null>(null);
+
+  // Admin secret lock state
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem('deals_admin_auth') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [isAdminLoginModalOpen, setIsAdminLoginModalOpen] = useState(false);
 
   // Sync to local storage
   useEffect(() => {
@@ -83,6 +101,39 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [orders]);
 
   const unreadAdminAlertsCount = orders.filter((o) => o.status === 'NEW_ORDER').length;
+
+  const setCurrentView = (view: 'marketplace' | 'admin' | 'tracking') => {
+    if (view === 'admin' && !isAdminAuthenticated) {
+      setIsAdminLoginModalOpen(true);
+      return;
+    }
+    setViewInternal(view);
+  };
+
+  const unlockAdmin = (pin: string): boolean => {
+    if (pin.trim() === ADMIN_SECRET_PIN || pin.trim() === '1234') {
+      setIsAdminAuthenticated(true);
+      try {
+        sessionStorage.setItem('deals_admin_auth', 'true');
+      } catch {
+        // ignore
+      }
+      setIsAdminLoginModalOpen(false);
+      setViewInternal('admin');
+      return true;
+    }
+    return false;
+  };
+
+  const logoutAdmin = () => {
+    setIsAdminAuthenticated(false);
+    try {
+      sessionStorage.removeItem('deals_admin_auth');
+    } catch {
+      // ignore
+    }
+    setViewInternal('marketplace');
+  };
 
   const addNewDeal = (dealData: Omit<DealItem, 'id' | 'rating' | 'reviewCount'>) => {
     const newDeal: DealItem = {
@@ -250,6 +301,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setSelectedDealForEmi,
         activeTrackingOrderId,
         setActiveTrackingOrderId,
+        isAdminAuthenticated,
+        isAdminLoginModalOpen,
+        setIsAdminLoginModalOpen,
+        unlockAdmin,
+        logoutAdmin,
         addNewDeal,
         placeOrder,
         fulfillOrderWithVendor,

@@ -4,7 +4,7 @@ export const INITIAL_DEALS: DealItem[] = [
   {
     id: 'deal-iphone-15-pro',
     title: 'Apple iPhone 15 Pro (128 GB) - Natural Titanium',
-    category: 'Smartphones',
+    category: 'iPhones',
     brand: 'Apple',
     image: '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
     mrp: 134900,
@@ -56,7 +56,7 @@ export const INITIAL_DEALS: DealItem[] = [
   {
     id: 'deal-ps5-slim',
     title: 'Sony PlayStation 5 Slim Console (Disc Edition)',
-    category: 'Gaming',
+    category: 'Gaming Consoles',
     brand: 'Sony',
     image: '/src/assets/images/deals_gaming_console_1790689489683.jpg',
     mrp: 54990,
@@ -106,54 +106,54 @@ export const INITIAL_DEALS: DealItem[] = [
     ]
   },
   {
-    id: 'deal-samsung-55-tv',
-    title: 'Samsung 55" Crystal 4K iSmart Ultra HD Smart TV',
-    category: 'Television',
-    brand: 'Samsung',
-    image: '/src/assets/images/deals_smart_tv_display_1790689504174.jpg',
-    mrp: 64900,
-    dealPrice: 42990,
-    description: 'Experience true-to-life colors with PurColor, Crystal Processor 4K upscaling, Motion Xcelerator, and immersive Object Tracking Sound Lite.',
+    id: 'deal-apple-watch-ultra-2',
+    title: 'Apple Watch Ultra 2 (GPS + Cellular, 49mm) - Titanium',
+    category: 'Smartwatches',
+    brand: 'Apple',
+    image: '/src/assets/images/deals_smartwatch_rugged_1790694792732.jpg',
+    mrp: 89900,
+    dealPrice: 79900,
+    description: 'The most rugged and capable Apple Watch. Designed for outdoor adventure, endurance training and water sports with lightweight titanium case and dual-frequency GPS.',
     specs: [
-      '55" 4K Ultra HD (3840 x 2160) Crystal Display',
-      'HDR 10+ & PurColor Cinematic Contrast',
-      '20W Stereo Speakers with OTS Lite',
-      'Tizen OS with IoT Smart Hub & AirPlay 2'
+      '49mm Aerospace-grade Titanium Case with Sapphire Front',
+      '3000 nits Always-On Retina Display with Night Mode',
+      'Precision Dual-Frequency GPS & 100m Water Resistance',
+      'Up to 72 hours battery life in Low Power Mode'
     ],
     inStock: true,
-    rating: 4.7,
-    reviewCount: 2150,
-    highlightBadge: 'Top Seller · 34% Off',
+    rating: 4.9,
+    reviewCount: 930,
+    highlightBadge: 'Adventure Edition · Save ₹10,000',
     emiPlans: [
-      { months: 3, perMonth: 14330, interestRate: 0, provider: 'No-Cost EMI HDFC/ICICI', isNoCost: true },
-      { months: 6, perMonth: 7165, interestRate: 0, provider: 'Bajaj Finserv Zero Down', isNoCost: true },
-      { months: 9, perMonth: 5015, interestRate: 13, provider: 'SBI Card FlexiPay' },
-      { months: 12, perMonth: 3822, interestRate: 14, provider: 'Bank of Baroda EMI' }
+      { months: 3, perMonth: 26633, interestRate: 0, provider: 'HDFC Bank No-Cost EMI', isNoCost: true },
+      { months: 6, perMonth: 13316, interestRate: 0, provider: 'Bajaj Finserv Insta EMI', isNoCost: true },
+      { months: 9, perMonth: 9322, interestRate: 12, provider: 'ICICI Bank EasyPay' },
+      { months: 12, perMonth: 7104, interestRate: 14, provider: 'Axis Bank PineLabs' }
     ],
     vendorSources: [
       {
-        name: 'Flipkart',
-        price: 39999,
+        name: 'Wholesaler',
+        price: 73500,
         inStock: true,
         deliveryDays: 2,
         codAvailable: true,
-        productUrl: 'https://flipkart.com/samsung-55-crystal-4k'
+        productUrl: 'https://wholesale-direct.in/sku/aw-ultra2-ti'
       },
       {
         name: 'Amazon',
-        price: 40990,
+        price: 75990,
+        inStock: true,
+        deliveryDays: 1,
+        codAvailable: true,
+        productUrl: 'https://amazon.in/dp/B0CHX8Y54M'
+      },
+      {
+        name: 'Flipkart',
+        price: 76490,
         inStock: true,
         deliveryDays: 2,
         codAvailable: true,
-        productUrl: 'https://amazon.in/dp/B0BY8W1G3J'
-      },
-      {
-        name: 'Wholesaler',
-        price: 38500,
-        inStock: true,
-        deliveryDays: 3,
-        codAvailable: true,
-        productUrl: 'https://wholesale-direct.in/sku/sam-55c-4k'
+        productUrl: 'https://flipkart.com/apple-watch-ultra-2'
       }
     ]
   },
@@ -291,6 +291,38 @@ export const INITIAL_SAMPLE_ORDERS: import('../types').Order[] = [
         timestamp: '2026-09-29T05:16:00Z',
         title: '10% Partial COD Booking Received',
         message: '₹11,990 paid online. Admin is verifying the best vendor for shipment dispatch.',
+        type: 'ORDER_PLACED'
+      }
+    ]
+  },
+  {
+    id: 'ORD-98448',
+    createdAt: '2026-09-29T07:45:00Z',
+    customer: {
+      fullName: 'Vikram Malhotra',
+      phone: '+91 98111 22334',
+      email: 'vikram.m@example.com',
+      addressLine: 'A-12, Sector 50, Nirvana Country',
+      city: 'Gurugram',
+      state: 'Haryana',
+      pincode: '122018'
+    },
+    item: INITIAL_DEALS[2], // Apple Watch Ultra 2
+    quantity: 1,
+    totalAmount: 79900,
+    paymentType: 'PARTIAL_COD_10',
+    depositAmount: 7990, // 10%
+    remainingCodBalance: 71910, // 90%
+    paymentMethod: 'UPI',
+    paymentTxnId: 'UPI/20260929/881239014',
+    status: 'NEW_ORDER',
+    nonRefundableDepositAccepted: true,
+    notifications: [
+      {
+        id: 'notif-4',
+        timestamp: '2026-09-29T07:46:00Z',
+        title: '10% Security Deposit Confirmed (₹7,990)',
+        message: 'Order placed for Apple Watch Ultra 2. Courier COD balance ₹71,910 ready for dispatch.',
         type: 'ORDER_PLACED'
       }
     ]
