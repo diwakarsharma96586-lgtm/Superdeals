@@ -16,6 +16,7 @@ import {
   CATEGORY_DEFAULT_IMAGES, 
   normalizeCategory 
 } from '../data/mockDeals';
+import { ProductImage } from './ProductImage';
 
 export const DealsCatalog: React.FC = () => {
   const { deals, setSelectedDealForCheckout, setSelectedDealForEmi, refreshLiveDeals } = useApp();
@@ -191,32 +192,29 @@ export const DealsCatalog: React.FC = () => {
                 className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg hover:border-slate-300 transition-all flex flex-col justify-between group"
               >
                 <div>
-                  {/* Image Container with 4:3 Aspect Ratio and fallback */}
-                  <div className="relative aspect-[4/3] bg-slate-50 overflow-hidden border-b border-slate-100">
-                    <img
-                      src={deal.image}
-                      alt={deal.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => {
-                        const fallback = CATEGORY_DEFAULT_IMAGES[displayCategory] || CATEGORY_DEFAULT_IMAGES['Mobiles & iPhones'];
-                        if ((e.currentTarget as HTMLImageElement).src !== fallback) {
-                          (e.currentTarget as HTMLImageElement).src = fallback;
-                        }
-                      }}
-                    />
+                  {/* Product Image with fixed aspect ratio, contain styling, and error fallback */}
+                  <ProductImage
+                    src={deal.image}
+                    alt={deal.title}
+                    category={deal.category}
+                    aspectRatio="aspect-[4/3]"
+                    containerClassName="border-b border-slate-100 group-hover:scale-[1.02] transition-transform duration-300"
+                    badge={
+                      <>
+                        {/* Verified Discount Badge */}
+                        <div className="absolute top-3 left-3 bg-emerald-600 text-white font-bold text-[11px] px-2.5 py-1 rounded-md shadow-xs flex items-center gap-1 z-10">
+                          <Percent className="w-3 h-3" />
+                          <span>{savingsPercent}% OFF</span>
+                        </div>
 
-                    {/* Verified Discount Badge */}
-                    <div className="absolute top-3 left-3 bg-emerald-600 text-white font-bold text-[11px] px-2.5 py-1 rounded-md shadow-xs flex items-center gap-1">
-                      <Percent className="w-3 h-3" />
-                      <span>{savingsPercent}% OFF</span>
-                    </div>
-
-                    {deal.highlightBadge && (
-                      <div className="absolute bottom-3 left-3 bg-slate-900/80 backdrop-blur-xs text-white text-[10px] font-medium px-2 py-0.5 rounded">
-                        {deal.highlightBadge}
-                      </div>
-                    )}
-                  </div>
+                        {deal.highlightBadge && (
+                          <div className="absolute bottom-3 left-3 bg-slate-900/80 backdrop-blur-xs text-white text-[10px] font-medium px-2 py-0.5 rounded z-10">
+                            {deal.highlightBadge}
+                          </div>
+                        )}
+                      </>
+                    }
+                  />
 
                   {/* Body Content */}
                   <div className="p-4 space-y-3">

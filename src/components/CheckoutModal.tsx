@@ -14,6 +14,7 @@ import {
   AlertTriangle,
   Lock
 } from 'lucide-react';
+import { ProductImage } from './ProductImage';
 
 export const CheckoutModal: React.FC = () => {
   const { 
@@ -230,10 +231,11 @@ export const CheckoutModal: React.FC = () => {
             <>
               {/* Product Brief */}
               <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <img
+                <ProductImage
                   src={deal.image}
                   alt={deal.title}
-                  className="w-16 h-12 object-cover rounded-lg bg-slate-200"
+                  category={deal.category}
+                  containerClassName="w-16 h-14 rounded-lg shrink-0 border border-slate-200 bg-white"
                 />
                 <div className="flex-1 min-w-0">
                   <h4 className="text-xs font-bold text-slate-900 truncate">

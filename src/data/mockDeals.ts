@@ -10,29 +10,30 @@ export const MAJOR_CATEGORIES = [
   'Gaming Consoles & Accessories',
 ] as const;
 
+// Reliable, high-resolution direct image URLs from Unsplash CDN
 export const CATEGORY_DEFAULT_IMAGES: Record<string, string> = {
   // Major canonical categories
-  'Mobiles & iPhones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
-  'Laptops & Computers': '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
-  'Audio & Headphones': '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
-  'Smartwatches & Wearables': '/src/assets/images/deals_smartwatch_rugged_1790694792732.jpg',
-  'Smart TVs & Home Electronics': '/src/assets/images/deals_smart_tv_display_1790689504174.jpg',
-  'Gaming Consoles & Accessories': '/src/assets/images/deals_gaming_console_1790689489683.jpg',
+  'Mobiles & iPhones': 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=800&q=80',
+  'Laptops & Computers': 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
+  'Audio & Headphones': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
+  'Smartwatches & Wearables': 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=80',
+  'Smart TVs & Home Electronics': 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=800&q=80',
+  'Gaming Consoles & Accessories': 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=800&q=80',
 
   // Aliases for backward compatibility
-  'Smartphones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
-  'iPhones': '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
-  'Laptops': '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
-  'Smartwatches': '/src/assets/images/deals_smartwatch_rugged_1790694792732.jpg',
-  'Smart TVs': '/src/assets/images/deals_smart_tv_display_1790689504174.jpg',
-  'TV': '/src/assets/images/deals_smart_tv_display_1790689504174.jpg',
-  'Audio': '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
-  'Headphones': '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
-  'Gaming': '/src/assets/images/deals_gaming_console_1790689489683.jpg',
+  'Smartphones': 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=800&q=80',
+  'iPhones': 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=800&q=80',
+  'Laptops': 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
+  'Smartwatches': 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=80',
+  'Smart TVs': 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=800&q=80',
+  'TV': 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=800&q=80',
+  'Audio': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
+  'Headphones': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
+  'Gaming': 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=800&q=80',
 };
 
 export const normalizeCategory = (cat: string): string => {
-  const lower = cat.toLowerCase();
+  const lower = (cat || '').toLowerCase();
   if (lower.includes('mobile') || lower.includes('phone') || lower.includes('iphone')) {
     return 'Mobiles & iPhones';
   }
@@ -51,7 +52,7 @@ export const normalizeCategory = (cat: string): string => {
   if (lower.includes('gaming') || lower.includes('console') || lower.includes('playstation') || lower.includes('xbox') || lower.includes('switch') || lower.includes('deck') || lower.includes('vr')) {
     return 'Gaming Consoles & Accessories';
   }
-  return cat;
+  return cat || 'Mobiles & iPhones';
 };
 
 export const INITIAL_DEALS: DealItem[] = [
@@ -61,7 +62,7 @@ export const INITIAL_DEALS: DealItem[] = [
     title: 'Apple iPhone 15 Pro (128 GB) - Natural Titanium',
     category: 'Mobiles & iPhones',
     brand: 'Apple',
-    image: '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
+    image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=800&q=80',
     mrp: 134900,
     dealPrice: 119900, // 11.1% discount (> 8%)
     description: 'Forged in titanium featuring the ground-breaking A17 Pro chip, customisable Action button, and 48MP main camera with 3x optical telephoto lens.',
@@ -91,7 +92,7 @@ export const INITIAL_DEALS: DealItem[] = [
     title: 'Samsung Galaxy S24 Ultra 5G (Titanium Gray, 256GB, AI Powered)',
     category: 'Mobiles & iPhones',
     brand: 'Samsung',
-    image: '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
+    image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=800&q=80',
     mrp: 129999,
     dealPrice: 108999, // 16.2% discount (> 8%)
     description: 'Galaxy AI is here. 200MP Quad Telephoto zoom, built-in S Pen, Snapdragon 8 Gen 3 for Galaxy, and durable titanium frame.',
@@ -121,7 +122,7 @@ export const INITIAL_DEALS: DealItem[] = [
     title: 'Apple iPhone 15 Plus (256 GB) - Blue Dynamic Island',
     category: 'Mobiles & iPhones',
     brand: 'Apple',
-    image: '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
+    image: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=800&q=80',
     mrp: 89900,
     dealPrice: 77990, // 13.2% discount (> 8%)
     description: 'Dynamic Island, 48MP main camera, USB-C, and incredible all-day battery life with A16 Bionic chip.',
@@ -151,7 +152,7 @@ export const INITIAL_DEALS: DealItem[] = [
     title: 'OnePlus 12 5G (Silky Black, 16GB RAM, 512GB Storage)',
     category: 'Mobiles & iPhones',
     brand: 'OnePlus',
-    image: '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
+    image: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80',
     mrp: 69999,
     dealPrice: 59999, // 14.3% discount (> 8%)
     description: '4th Gen Hasselblad Camera System for Mobile, Snapdragon 8 Gen 3, 2K 120Hz ProXDR display, and 100W SUPERVOOC charging.',
@@ -183,7 +184,7 @@ export const INITIAL_DEALS: DealItem[] = [
     title: 'Apple MacBook Air M2 Chip (13.6-inch, 8GB, 256GB SSD)',
     category: 'Laptops & Computers',
     brand: 'Apple',
-    image: '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
+    image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
     mrp: 99900,
     dealPrice: 84900, // 15.0% discount (> 8%)
     description: 'Incredibly thin and light silent fanless laptop. Up to 18 hours of battery life, striking Liquid Retina display, and 1080p FaceTime HD camera.',
@@ -213,7 +214,7 @@ export const INITIAL_DEALS: DealItem[] = [
     title: 'ASUS ROG Strix G16 Gaming Laptop (16", RTX 4060, i7 13th Gen)',
     category: 'Laptops & Computers',
     brand: 'ASUS',
-    image: '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
+    image: 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?auto=format&fit=crop&w=800&q=80',
     mrp: 154990,
     dealPrice: 134990, // 12.9% discount (> 8%)
     description: 'Dominate esports with Intel Core i7-13650HX processor, NVIDIA GeForce RTX 4060 GPU with 140W max TGP, and 165Hz ROG Nebula Display.',
@@ -243,7 +244,7 @@ export const INITIAL_DEALS: DealItem[] = [
     title: 'Lenovo Legion Slim 5 AMD Ryzen 7 (16" WQXGA 165Hz, RTX 4060)',
     category: 'Laptops & Computers',
     brand: 'Lenovo',
-    image: '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
+    image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=800&q=80',
     mrp: 132990,
     dealPrice: 114990, // 13.5% discount (> 8%)
     description: 'Powered by AMD Ryzen 7 7840HS and NVIDIA GeForce RTX 4060 with AI Engine+ Legion Coldfront 5.0 thermal technology.',
@@ -273,7 +274,7 @@ export const INITIAL_DEALS: DealItem[] = [
     title: 'Dell XPS 13 Plus Ultrabook (13.4" 3.5K OLED, Intel Core i7 13th Gen)',
     category: 'Laptops & Computers',
     brand: 'Dell',
-    image: '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
+    image: 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=800&q=80',
     mrp: 179900,
     dealPrice: 154900, // 13.9% discount (> 8%)
     description: 'Iconic seamless capacitive glass touchpad, zero-lattice keyboard, and stunning 3.5K OLED touch display with 100% DCI-P3.',
@@ -305,7 +306,7 @@ export const INITIAL_DEALS: DealItem[] = [
     title: 'Sony WH-1000XM5 Wireless Industry Leading ANC Headphones',
     category: 'Audio & Headphones',
     brand: 'Sony',
-    image: '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
     mrp: 34990,
     dealPrice: 26990, // 22.9% discount (> 8%)
     description: 'Two processors and 8 microphones for unprecedented noise cancellation. Auto NC Optimizer, 30-hour battery life, and crystal clear hands-free calling.',
@@ -335,7 +336,7 @@ export const INITIAL_DEALS: DealItem[] = [
     title: 'Apple AirPods Pro (2nd Generation) with USB-C MagSafe Case',
     category: 'Audio & Headphones',
     brand: 'Apple',
-    image: '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
+    image: 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=800&q=80',
     mrp: 24900,
     dealPrice: 19990, // 19.7% discount (> 8%)
     description: 'Up to 2x more Active Noise Cancellation, Adaptive Audio, Transparency mode, and Personalized Spatial Audio with dynamic head tracking.',
@@ -365,7 +366,7 @@ export const INITIAL_DEALS: DealItem[] = [
     title: 'Bose QuietComfort Ultra Wireless Noise Cancelling Headphones',
     category: 'Audio & Headphones',
     brand: 'Bose',
-    image: '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
+    image: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=800&q=80',
     mrp: 35900,
     dealPrice: 29990, // 16.5% discount (> 8%)
     description: 'World-class noise cancellation, breakthrough spatialized audio, and CustomTune technology to tailor sound to your ears.',
@@ -397,7 +398,7 @@ export const INITIAL_DEALS: DealItem[] = [
     title: 'Apple Watch Ultra 2 (GPS + Cellular, 49mm Rugged Titanium)',
     category: 'Smartwatches & Wearables',
     brand: 'Apple',
-    image: '/src/assets/images/deals_smartwatch_rugged_1790694792732.jpg',
+    image: 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=80',
     mrp: 89900,
     dealPrice: 78990, // 12.1% discount (> 8%)
     description: 'The most capable and rugged Apple Watch. S9 SiP chip, 3000 nits display, precision dual-frequency GPS, and up to 72 hours of battery in Low Power Mode.',
@@ -427,7 +428,7 @@ export const INITIAL_DEALS: DealItem[] = [
     title: 'Samsung Galaxy Watch 6 Classic (47mm Bluetooth, Rotating Bezel)',
     category: 'Smartwatches & Wearables',
     brand: 'Samsung',
-    image: '/src/assets/images/deals_smartwatch_rugged_1790694792732.jpg',
+    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
     mrp: 40999,
     dealPrice: 32999, // 19.5% discount (> 8%)
     description: 'Timeless stainless steel rotating physical bezel, advanced sleep coaching, BIA body composition analysis, and sapphire crystal glass.',
@@ -459,7 +460,7 @@ export const INITIAL_DEALS: DealItem[] = [
     title: 'LG 55-inch 4K OLED Cinema Display Smart TV (120Hz Dolby Vision)',
     category: 'Smart TVs & Home Electronics',
     brand: 'LG',
-    image: '/src/assets/images/deals_smart_tv_display_1790689504174.jpg',
+    image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=800&q=80',
     mrp: 149990,
     dealPrice: 119990, // 20.0% discount (> 8%)
     description: 'Self-lit OLED pixels for infinite contrast and 100% color fidelity. α9 AI 4K Gen6 processor, Dolby Vision, Atmos, and NVIDIA G-Sync gaming.',
@@ -489,7 +490,7 @@ export const INITIAL_DEALS: DealItem[] = [
     title: 'Sony Bravia 65-inch 4K Ultra HD Smart Google TV (Triluminos Pro)',
     category: 'Smart TVs & Home Electronics',
     brand: 'Sony',
-    image: '/src/assets/images/deals_smart_tv_display_1790689504174.jpg',
+    image: 'https://images.unsplash.com/photo-1461151304267-38535e780c79?auto=format&fit=crop&w=800&q=80',
     mrp: 109900,
     dealPrice: 89990, // 18.1% discount (> 8%)
     description: 'Over a billion colors brought to life by 4K HDR Processor X1 and Triluminos Pro. Motionflow XR 200, Dolby Atmos, and built-in Google TV.',
@@ -521,7 +522,7 @@ export const INITIAL_DEALS: DealItem[] = [
     title: 'Sony PlayStation 5 Slim Console (Disc Edition with 1TB SSD)',
     category: 'Gaming Consoles & Accessories',
     brand: 'Sony',
-    image: '/src/assets/images/deals_gaming_console_1790689489683.jpg',
+    image: 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=800&q=80',
     mrp: 54990,
     dealPrice: 47990, // 12.7% discount (> 8%)
     description: 'Slim design with 1TB ultra-high speed SSD storage, DualSense wireless controller with haptic feedback, adaptive triggers, and ray tracing support.',
@@ -551,7 +552,7 @@ export const INITIAL_DEALS: DealItem[] = [
     title: 'Microsoft Xbox Series X Console (1TB Custom NVMe SSD, True 4K)',
     category: 'Gaming Consoles & Accessories',
     brand: 'Microsoft',
-    image: '/src/assets/images/deals_gaming_console_1790689489683.jpg',
+    image: 'https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?auto=format&fit=crop&w=800&q=80',
     mrp: 55990,
     dealPrice: 48990, // 12.5% discount (> 8%)
     description: 'The fastest, most powerful Xbox ever. Play thousands of titles from four generations of consoles with 12 teraflops of raw graphic processing power.',
@@ -585,7 +586,7 @@ export const INITIAL_DRAFT_DEALS: DealItem[] = [
     title: 'Apple iPad Air 11-inch M2 (Wi-Fi, 128GB - Space Gray)',
     category: 'Laptops & Computers',
     brand: 'Apple',
-    image: '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
+    image: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=800&q=80',
     mrp: 59900,
     dealPrice: 51990, // 13.2% discount (> 8%)
     description: 'Supercharged by Apple M2 chip. Liquid Retina display, landscape 12MP front camera with Center Stage, and Wi-Fi 6E.',
@@ -618,7 +619,7 @@ export const INITIAL_DRAFT_DEALS: DealItem[] = [
     title: 'Samsung 65-inch Neo QLED 4K Smart TV (Quantum Matrix Mini-LED)',
     category: 'Smart TVs & Home Electronics',
     brand: 'Samsung',
-    image: '/src/assets/images/deals_smart_tv_display_1790689504174.jpg',
+    image: 'https://images.unsplash.com/photo-1509281373149-e957c6296406?auto=format&fit=crop&w=800&q=80',
     mrp: 184900,
     dealPrice: 149990, // 18.9% discount (> 8%)
     description: 'Quantum Matrix Technology with Mini LEDs, Neural Quantum Processor 4K, Dolby Atmos, and Neo Quantum HDR+.',
@@ -651,7 +652,7 @@ export const INITIAL_DRAFT_DEALS: DealItem[] = [
     title: 'Garmin Fenix 7 Pro Sapphire Solar GPS Multisport Smartwatch',
     category: 'Smartwatches & Wearables',
     brand: 'Garmin',
-    image: '/src/assets/images/deals_smartwatch_rugged_1790694792732.jpg',
+    image: 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=800&q=80',
     mrp: 99990,
     dealPrice: 84990, // 15.0% discount (> 8%)
     description: 'Solar charging lens extends battery life up to 37 days. Built-in LED flashlight, endurance score, and TopoActive multi-continent maps.',
@@ -689,7 +690,7 @@ export const MULTI_CATEGORY_TRENDING_POOL: Record<string, DealItem[]> = {
       title: 'Google Pixel 8 Pro 5G (Bay Blue, 256GB, Tensor G3, Pro Camera)',
       category: 'Mobiles & iPhones',
       brand: 'Google',
-      image: '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
+      image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02560?auto=format&fit=crop&w=800&q=80',
       mrp: 106999,
       dealPrice: 89999, // 15.9% discount (> 8%)
       description: 'Pro camera system with dedicated telephoto zoom, Best Take, Magic Editor, and Google Tensor G3 with 7 years of OS updates.',
@@ -721,7 +722,7 @@ export const MULTI_CATEGORY_TRENDING_POOL: Record<string, DealItem[]> = {
       title: 'Apple iPhone 15 Pro Max (256 GB) - Black Titanium',
       category: 'Mobiles & iPhones',
       brand: 'Apple',
-      image: '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
+      image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=800&q=80',
       mrp: 159900,
       dealPrice: 139900, // 12.5% discount (> 8%)
       description: 'The ultimate iPhone experience. 5x Telephoto optical zoom, A17 Pro chip, aerospace titanium enclosure, and USB-C 3 transfer speeds.',
@@ -753,7 +754,7 @@ export const MULTI_CATEGORY_TRENDING_POOL: Record<string, DealItem[]> = {
       title: 'Samsung Galaxy Z Flip 5 (Mint Green, 256GB, Flex Window)',
       category: 'Mobiles & iPhones',
       brand: 'Samsung',
-      image: '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg',
+      image: 'https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=800&q=80',
       mrp: 99999,
       dealPrice: 81999, // 18.0% discount (> 8%)
       description: 'Full-sized smartphone that folds to pocket size. 3.4-inch Flex Window for quick replies, widgets, and selfies without opening the phone.',
@@ -788,7 +789,7 @@ export const MULTI_CATEGORY_TRENDING_POOL: Record<string, DealItem[]> = {
       title: 'Apple MacBook Pro 14-inch (M3 Pro Chip, 18GB RAM, 512GB SSD)',
       category: 'Laptops & Computers',
       brand: 'Apple',
-      image: '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
+      image: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&w=800&q=80',
       mrp: 199900,
       dealPrice: 174900, // 12.5% discount (> 8%)
       description: 'Scary fast. Liquid Retina XDR display with 1600 nits peak brightness, hardware-accelerated ray tracing, and up to 22 hours of battery.',
@@ -820,7 +821,7 @@ export const MULTI_CATEGORY_TRENDING_POOL: Record<string, DealItem[]> = {
       title: 'HP Omen 16 Gaming Laptop (16.1" QHD 240Hz, Core i7 13th Gen, RTX 4070)',
       category: 'Laptops & Computers',
       brand: 'HP',
-      image: '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
+      image: 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?auto=format&fit=crop&w=800&q=80',
       mrp: 172900,
       dealPrice: 147990, // 14.4% discount (> 8%)
       description: 'Peak desktop-class gaming performance. Omen Tempest Cooling, 240Hz esports display, NVIDIA RTX 4070 8GB GPU, and RGB keyboard.',
@@ -852,7 +853,7 @@ export const MULTI_CATEGORY_TRENDING_POOL: Record<string, DealItem[]> = {
       title: 'Apple Mac Mini Desktop PC (M2 8-Core CPU, 10-Core GPU, 512GB SSD)',
       category: 'Laptops & Computers',
       brand: 'Apple',
-      image: '/src/assets/images/deals_premium_laptop_1790689523020.jpg',
+      image: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=800&q=80',
       mrp: 79900,
       dealPrice: 67990, // 14.9% discount (> 8%)
       description: 'More muscle. More hustle. Compact aluminum powerhouse desktop capable of handling intensive 4K ProRes video and creative workloads.',
@@ -887,7 +888,7 @@ export const MULTI_CATEGORY_TRENDING_POOL: Record<string, DealItem[]> = {
       title: 'Sennheiser Momentum 4 Wireless ANC Headphones (60-Hour Battery)',
       category: 'Audio & Headphones',
       brand: 'Sennheiser',
-      image: '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
+      image: 'https://images.unsplash.com/photo-1484704849700-f032a568e944?auto=format&fit=crop&w=800&q=80',
       mrp: 34990,
       dealPrice: 27490, // 21.4% discount (> 8%)
       description: 'Signature audiophile sound with exceptional 60-hour battery life, Adaptive Noise Cancellation, and customizable sound personalization.',
@@ -919,7 +920,7 @@ export const MULTI_CATEGORY_TRENDING_POOL: Record<string, DealItem[]> = {
       title: 'Marshall Stanmore III Bluetooth Home Speaker (Room-Filling Sound)',
       category: 'Audio & Headphones',
       brand: 'Marshall',
-      image: '/src/assets/images/deals_audio_headphones_1790697009858.jpg',
+      image: 'https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=800&q=80',
       mrp: 41999,
       dealPrice: 34999, // 16.7% discount (> 8%)
       description: 'Iconic vintage Marshall aesthetic with wider stereo soundstage. Dynamic Loudness, Bluetooth 5.2, and analog control brass knobs.',
@@ -954,7 +955,7 @@ export const MULTI_CATEGORY_TRENDING_POOL: Record<string, DealItem[]> = {
       title: 'Google Pixel Watch 2 (LTE + Bluetooth, All-Day Battery, Matte Black)',
       category: 'Smartwatches & Wearables',
       brand: 'Google',
-      image: '/src/assets/images/deals_smartwatch_rugged_1790694792732.jpg',
+      image: 'https://images.unsplash.com/photo-1510017803434-a899398421b3?auto=format&fit=crop&w=800&q=80',
       mrp: 39900,
       dealPrice: 32900, // 17.5% discount (> 8%)
       description: 'Fitbit precision heart rate tracking, stress management with cEDA sensor, safety check, and smooth Wear OS experience.',
@@ -986,7 +987,7 @@ export const MULTI_CATEGORY_TRENDING_POOL: Record<string, DealItem[]> = {
       title: 'OnePlus Watch 2 (Dual-Engine Architecture, 100-Hour Smart Battery)',
       category: 'Smartwatches & Wearables',
       brand: 'OnePlus',
-      image: '/src/assets/images/deals_smartwatch_rugged_1790694792732.jpg',
+      image: 'https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?auto=format&fit=crop&w=800&q=80',
       mrp: 27999,
       dealPrice: 22999, // 17.9% discount (> 8%)
       description: 'Dual-Engine architecture with Snapdragon W5 + BES2700 chipsets delivering up to 100 hours of full Smart Mode battery life.',
@@ -1021,7 +1022,7 @@ export const MULTI_CATEGORY_TRENDING_POOL: Record<string, DealItem[]> = {
       title: 'TCL 65-inch QD-Mini LED 4K 144Hz Google TV (Dolby Vision IQ)',
       category: 'Smart TVs & Home Electronics',
       brand: 'TCL',
-      image: '/src/assets/images/deals_smart_tv_display_1790689504174.jpg',
+      image: 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?auto=format&fit=crop&w=800&q=80',
       mrp: 129990,
       dealPrice: 98990, // 23.8% discount (> 8%)
       description: 'Quantum Dot Mini-LED with 500+ local dimming zones, 1300 nits peak brightness, 144Hz VRR gaming, and Onkyo 2.1 Hi-Fi audio.',
@@ -1053,7 +1054,7 @@ export const MULTI_CATEGORY_TRENDING_POOL: Record<string, DealItem[]> = {
       title: 'Sony Bravia 55-inch Full Array LED 4K 120Hz TV (XR-55X90L)',
       category: 'Smart TVs & Home Electronics',
       brand: 'Sony',
-      image: '/src/assets/images/deals_smart_tv_display_1790689504174.jpg',
+      image: 'https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=800&q=80',
       mrp: 124900,
       dealPrice: 99990, // 19.9% discount (> 8%)
       description: 'Cognitive Processor XR, Full Array LED with XR Contrast Booster, 4K 120Hz HDMI 2.1 gaming, and Acoustic Multi-Audio.',
@@ -1088,7 +1089,7 @@ export const MULTI_CATEGORY_TRENDING_POOL: Record<string, DealItem[]> = {
       title: 'Nintendo Switch OLED Model Console (Mario Red Edition)',
       category: 'Gaming Consoles & Accessories',
       brand: 'Nintendo',
-      image: '/src/assets/images/deals_gaming_console_1790689489683.jpg',
+      image: 'https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?auto=format&fit=crop&w=800&q=80',
       mrp: 34990,
       dealPrice: 28990, // 17.1% discount (> 8%)
       description: 'Vibrant 7-inch OLED screen, wide adjustable stand, wired LAN dock, 64GB internal storage, and enhanced audio.',
@@ -1120,7 +1121,7 @@ export const MULTI_CATEGORY_TRENDING_POOL: Record<string, DealItem[]> = {
       title: 'Valve Steam Deck OLED Handheld Gaming Console (512GB NVMe SSD)',
       category: 'Gaming Consoles & Accessories',
       brand: 'Valve',
-      image: '/src/assets/images/deals_gaming_console_1790689489683.jpg',
+      image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80',
       mrp: 59990,
       dealPrice: 51990, // 13.3% discount (> 8%)
       description: '7.4" HDR OLED display with 90Hz refresh rate, 50Wh battery for up to 12 hours of gameplay, and Wi-Fi 6E for superfast downloads.',

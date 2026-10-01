@@ -1,6 +1,7 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
 import { X, Calculator, ArrowRight, ShieldCheck, Check } from 'lucide-react';
+import { ProductImage } from './ProductImage';
 
 export const EmiModal: React.FC = () => {
   const { selectedDealForEmi, setSelectedDealForEmi, setSelectedDealForCheckout } = useApp();
@@ -37,10 +38,11 @@ export const EmiModal: React.FC = () => {
         <div className="p-6 space-y-5 text-xs">
           {/* Product Mini Header */}
           <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-            <img
+            <ProductImage
               src={deal.image}
               alt={deal.title}
-              className="w-14 h-12 object-cover rounded-lg bg-slate-100"
+              category={deal.category}
+              containerClassName="w-16 h-14 rounded-lg shrink-0 border border-slate-200 bg-white"
             />
             <div>
               <h4 className="font-bold text-slate-900 line-clamp-1">{deal.title}</h4>

@@ -17,6 +17,7 @@ import {
   Phone,
   AlertCircle
 } from 'lucide-react';
+import { ProductImage } from './ProductImage';
 
 export const OrderTrackingView: React.FC = () => {
   const { orders, activeTrackingOrderId, setActiveTrackingOrderId, setCurrentView } = useApp();
@@ -385,10 +386,11 @@ export const OrderTrackingView: React.FC = () => {
                   Item Purchased
                 </div>
                 <div className="flex items-start gap-3">
-                  <img
+                  <ProductImage
                     src={searchedOrder.item.image}
                     alt={searchedOrder.item.title}
-                    className="w-16 h-14 object-cover rounded-lg bg-slate-200 border border-slate-200"
+                    category={searchedOrder.item.category}
+                    containerClassName="w-16 h-14 rounded-lg shrink-0 border border-slate-200 bg-white"
                   />
                   <div className="space-y-1 text-xs">
                     <div className="font-bold text-slate-900">

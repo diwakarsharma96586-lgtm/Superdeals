@@ -6,7 +6,8 @@ import {
   INITIAL_SAMPLE_ORDERS, 
   MULTI_CATEGORY_TRENDING_POOL,
   MAJOR_CATEGORIES,
-  CATEGORY_DEFAULT_IMAGES
+  CATEGORY_DEFAULT_IMAGES,
+  normalizeCategory
 } from '../data/mockDeals';
 
 interface AppContextType {
@@ -81,10 +82,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
+          // Upgrade any legacy local /src/assets paths to high-res Unsplash direct URLs
+          const upgraded = parsed.map((d: DealItem) => {
+            const initialMatch = INITIAL_DEALS.find((init) => init.id === d.id);
+            if (!d.image || d.image.startsWith('/src/assets')) {
+              return {
+                ...d,
+                image: initialMatch?.image || CATEGORY_DEFAULT_IMAGES[normalizeCategory(d.category)] || CATEGORY_DEFAULT_IMAGES['Mobiles & iPhones']
+              };
+            }
+            return d;
+          });
+
           // Merge to preserve any previously approved or added deals while guaranteeing the full expanded initial catalog
-          const savedIds = new Set(parsed.map((d: DealItem) => d.id));
+          const savedIds = new Set(upgraded.map((d: DealItem) => d.id));
           const missingInitial = INITIAL_DEALS.filter((d) => !savedIds.has(d.id));
-          return [...parsed, ...missingInitial];
+          return [...upgraded, ...missingInitial];
         }
       }
     } catch {
@@ -96,7 +109,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [draftDeals, setDraftDeals] = useState<DealItem[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_DRAFTS);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((d: DealItem) => {
+            if (!d.image || d.image.startsWith('/src/assets')) {
+              return {
+                ...d,
+                image: CATEGORY_DEFAULT_IMAGES[normalizeCategory(d.category)] || CATEGORY_DEFAULT_IMAGES['Mobiles & iPhones']
+              };
+            }
+            return d;
+          });
+        }
+      }
     } catch {
       // fallback
     }
@@ -106,7 +132,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [orders, setOrders] = useState<Order[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_ORDERS);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((o: Order) => {
+            if (o.item && (!o.item.image || o.item.image.startsWith('/src/assets'))) {
+              return {
+                ...o,
+                item: {
+                  ...o.item,
+                  image: CATEGORY_DEFAULT_IMAGES[normalizeCategory(o.item.category)] || CATEGORY_DEFAULT_IMAGES['Mobiles & iPhones']
+                }
+              };
+            }
+            return o;
+          });
+        }
+      }
     } catch {
       // fallback
     }

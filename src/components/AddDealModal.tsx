@@ -6,6 +6,7 @@ import {
   CATEGORY_DEFAULT_IMAGES, 
   normalizeCategory 
 } from '../data/mockDeals';
+import { ProductImage } from './ProductImage';
 
 export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const { addNewDeal } = useApp();
@@ -123,6 +124,31 @@ export const AddDealModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
                   </option>
                 ))}
               </select>
+            </div>
+          </div>
+
+          {/* Product Image URL with Live Preview */}
+          <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <ProductImage
+              src={image}
+              alt={title || 'Product Preview'}
+              category={category}
+              containerClassName="w-20 h-16 rounded-lg shrink-0 border border-slate-200 bg-white"
+            />
+            <div className="flex-1 min-w-0">
+              <label className="block text-[10px] font-semibold text-slate-600 mb-1">
+                Direct Image URL (Unsplash / CDN)
+              </label>
+              <input
+                type="url"
+                value={image}
+                onChange={(e) => setImage(e.target.value)}
+                placeholder="https://images.unsplash.com/..."
+                className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-slate-900 text-xs bg-white"
+              />
+              <span className="text-[10px] text-slate-400 mt-0.5 block">
+                Auto-assigned category fallback if left default
+              </span>
             </div>
           </div>
 

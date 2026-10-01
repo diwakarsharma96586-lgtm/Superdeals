@@ -36,6 +36,7 @@ import {
   CATEGORY_DEFAULT_IMAGES, 
   normalizeCategory 
 } from '../data/mockDeals';
+import { ProductImage } from './ProductImage';
 
 export const AdminDashboard: React.FC = () => {
   const { 
@@ -427,19 +428,13 @@ export const AdminDashboard: React.FC = () => {
 
                       {/* Main Product Info & Image */}
                       <div className="flex items-start gap-4">
-                        <div className="w-24 h-20 aspect-[4/3] rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200 relative">
-                          <img
-                            src={deal.image}
-                            alt={deal.title}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              const fallback = CATEGORY_DEFAULT_IMAGES[normalizeCategory(deal.category)] || CATEGORY_DEFAULT_IMAGES['Mobiles & iPhones'];
-                              if ((e.currentTarget as HTMLImageElement).src !== fallback) {
-                                (e.currentTarget as HTMLImageElement).src = fallback;
-                              }
-                            }}
-                          />
-                        </div>
+                        <ProductImage
+                          src={deal.image}
+                          alt={deal.title}
+                          category={deal.category}
+                          aspectRatio="aspect-[4/3]"
+                          containerClassName="w-24 h-20 rounded-xl overflow-hidden shrink-0 border border-slate-200 bg-white"
+                        />
 
                         <div className="flex-1 min-w-0 space-y-1">
                           <h3 className="text-sm font-bold text-slate-900 line-clamp-2 leading-snug">
@@ -697,16 +692,11 @@ export const AdminDashboard: React.FC = () => {
                           <span>Ordered Product</span>
                         </div>
                         <div className="flex items-start gap-3">
-                          <img
+                          <ProductImage
                             src={order.item.image}
                             alt={order.item.title}
-                            className="w-14 h-12 object-cover rounded-lg bg-slate-100 border border-slate-200"
-                            onError={(e) => {
-                              const fallback = CATEGORY_DEFAULT_IMAGES[order.item.category] || '/src/assets/images/deals_smartphone_flagship_1790689474273.jpg';
-                              if ((e.currentTarget as HTMLImageElement).src !== fallback) {
-                                (e.currentTarget as HTMLImageElement).src = fallback;
-                              }
-                            }}
+                            category={order.item.category}
+                            containerClassName="w-16 h-14 rounded-lg shrink-0 border border-slate-200 bg-white"
                           />
                           <div>
                             <div className="font-bold text-slate-900 line-clamp-1">
